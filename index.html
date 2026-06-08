@@ -1,402 +1,191 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>POLIGONOSTIC: ASCII to Anything</title>
+<meta charset="UTF-8">
+<title>POLIGONOSTIC</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <style>
+
 body{
     margin:0;
-    background:radial-gradient(circle at center,#120018,#000);
     font-family:"Share Tech Mono",monospace;
-    overflow:hidden;
+    background:radial-gradient(circle at center,#120018,#000);
     color:#c77dff;
 }
 
-#topbar{
+/* LAYOUT WRAPPER */
+.container{
+    max-width:900px;
+    margin:0 auto;
+    padding:80px 40px;
+}
+
+/* TITLE */
+h1{
+    font-size:48px;
+    letter-spacing:8px;
+    margin:0;
+    text-align:center;
+
+    color:#c77dff;
+
+    text-shadow:
+        0 0 10px #c77dff,
+        0 0 25px #7b2cbf,
+        0 0 60px #3a0a55;
+}
+
+/* SUBTITLE */
+.subtitle{
+    text-align:center;
+    margin-top:15px;
+    opacity:0.7;
+    letter-spacing:2px;
+}
+
+/* SECTION BOXES */
+.section{
+    margin-top:60px;
+    padding:25px;
+
+    border:1px solid rgba(199,125,255,0.2);
+
+    background:rgba(10,0,20,0.6);
+
+    box-shadow:
+        0 0 40px rgba(123,44,191,0.15);
+
+    backdrop-filter: blur(6px);
+}
+
+.section h2{
+    margin:0 0 10px 0;
+    font-size:18px;
+    letter-spacing:3px;
+    color:#ffffff;
+}
+
+.section p{
+    line-height:1.6;
+    opacity:0.8;
+}
+
+/* BUTTON */
+.launch{
+    display:block;
+    width:100%;
+    text-align:center;
+
+    margin-top:50px;
+
+    padding:18px;
+
+    font-size:14px;
+    letter-spacing:3px;
+
+    text-decoration:none;
+
+    color:white;
+
+    background:linear-gradient(135deg,#7b2cbf,#c77dff);
+
+    border-radius:10px;
+
+    box-shadow:
+        0 0 25px rgba(199,125,255,0.35),
+        inset 0 0 15px rgba(255,255,255,0.1);
+
+    transition:0.2s ease;
+}
+
+.launch:hover{
+    transform:scale(1.02);
+    box-shadow:
+        0 0 45px rgba(199,125,255,0.6);
+}
+
+/* FOOTER */
+.footer{
+    text-align:center;
+    margin-top:60px;
+    font-size:11px;
+    opacity:0.4;
+    letter-spacing:2px;
+}
+
+/* DECORATIVE GRID BACKDROP */
+.grid{
     position:fixed;
     top:0;
     left:0;
-    right:0;
-    height:50px;
-    background:rgba(20,0,30,.95);
-    border-bottom:1px solid #7b2cbf;
-    display:flex;
-    align-items:center;
-    padding:0 15px;
-    box-shadow:0 0 20px rgba(123,44,191,.4);
-}
-
-#title{
-    font-weight:bold;
-    letter-spacing:3px;
-}
-
-#sidebar{
-    position:fixed;
-    top:50px;
-    left:0;
-    width:240px;
-    bottom:0;
-    background:rgba(10,0,20,.95);
-    border-right:1px solid #7b2cbf;
-    padding:15px;
-}
-
-button{
     width:100%;
-    margin-top:10px;
-    padding:10px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-family:inherit;
-    font-weight:bold;
-    background:linear-gradient(135deg,#7b2cbf,#c77dff);
-    color:white;
-    box-shadow:0 0 15px rgba(157,78,221,.6);
+    height:100%;
+
+    background-image:
+        linear-gradient(rgba(199,125,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(199,125,255,0.03) 1px, transparent 1px);
+
+    background-size:40px 40px;
+
+    pointer-events:none;
 }
 
-button:hover{
-    transform:scale(1.03);
-}
-
-#upload{
-    display:none;
-}
-
-#wrap{
-    margin-left:240px;
-    margin-top:50px;
-    height:calc(100vh - 50px);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-#asciiBox{
-    background:black;
-    border:1px solid #7b2cbf;
-    box-shadow:0 0 60px rgba(157,78,221,.5);
-    padding:10px;
-    position:relative;
-}
-
-canvas{
-    display:block;
-}
-
-video{
-    display:none;
-}
-
-#controls{
-    position:absolute;
-    bottom:-80px;
-    left:0;
-    right:0;
-    background:rgba(10,0,20,.95);
-    border-top:1px solid #7b2cbf;
-    padding:10px;
-    display:none;
-    gap:8px;
-    align-items:center;
-}
-
-#controls button{
-    width:auto;
-    padding:5px 10px;
-    font-size:12px;
-}
-
-#controls input{
-    width:120px;
-}
-
-.slider{
-    accent-color:#c77dff;
-}
-
-label{
-    font-size:11px;
-}
 </style>
 </head>
 
 <body>
 
-<div id="topbar">
-    <div id="title">POLIGONOSTIC — ASCII TO ANYTHING</div>
-</div>
+<div class="grid"></div>
 
-<div id="sidebar">
+<div class="container">
 
-    <button id="fileBtn">LOAD MEDIA</button>
-    <input type="file" id="upload" accept="image/*,video/*">
+    <h1>POLIGONOSTIC</h1>
 
-    <button id="downloadBtn">DOWNLOAD ASCII</button>
-
-</div>
-
-<div id="wrap">
-    <div id="asciiBox">
-
-        <canvas id="canvas"></canvas>
-
-        <div id="controls">
-
-            <button onclick="togglePlay()">⏯</button>
-
-            <label>TIME</label>
-            <input type="range" id="seek" class="slider" min="0" value="0">
-
-            <label>DENSITY</label>
-            <input type="range" id="density" class="slider" min="5" max="12" value="7">
-
-            <button onclick="toggleBW()">B/W</button>
-
-        </div>
-
+    <div class="subtitle">
+        ASCII VIDEO PROCESSING SYSTEM
     </div>
+
+    <div class="section">
+        <h2>ABOUT</h2>
+        <p>
+            POLIGONOSTIC is a visual transformation system that converts live video input into
+            structured ASCII representations. It is designed as a modular experimental environment
+            where each tool focuses on a single transformation process.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>CORE SYSTEM</h2>
+        <p>
+            The ASCII Video Engine processes incoming video frames into a fixed character grid.
+            Each pixel region is analyzed for brightness and color, then mapped to a corresponding
+            character set. The output is rendered in real time using a canvas-based display system.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>FEATURES IN THIS VERSION</h2>
+        <p>
+            • Real-time video to ASCII conversion<br>
+            • True color rendering per character<br>
+            • Adjustable density scaling<br>
+            • Black and white processing mode<br>
+            • Fixed viewport rendering system<br>
+            • Stable performance design
+        </p>
+    </div>
+
+    <a class="launch" href="./video.html">
+        LAUNCH ASCII VIDEO PLAYER
+    </a>
+
+    <div class="footer">
+        poligonostic.github.io
+    </div>
+
 </div>
-
-<video id="video" muted playsinline></video>
-
-<script>
-
-const upload = document.getElementById("upload");
-const fileBtn = document.getElementById("fileBtn");
-const downloadBtn = document.getElementById("downloadBtn");
-
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-const controls = document.getElementById("controls");
-const seek = document.getElementById("seek");
-const density = document.getElementById("density");
-
-const chars =
-" .'`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
-
-let running = false;
-let asciiFrames = [];
-let bw = false;
-
-fileBtn.onclick = () => upload.click();
-
-upload.addEventListener("change", e => {
-
-    const file = e.target.files[0];
-    if(!file) return;
-
-    const url = URL.createObjectURL(file);
-
-    asciiFrames = [];
-
-    if(file.type.startsWith("video/")){
-        loadVideo(url);
-    }
-    else{
-        loadImage(url);
-    }
-
-});
-
-function loadImage(url){
-
-    const img = new Image();
-
-    img.onload = () => {
-        controls.style.display = "none";
-        renderFrame(img,img.width,img.height);
-    };
-
-    img.src = url;
-}
-
-function loadVideo(url){
-
-    video.src = url;
-
-    video.onloadeddata = async () => {
-
-        await video.play();
-
-        running = true;
-
-        controls.style.display = "flex";
-
-        seek.max = video.duration;
-
-        loop();
-    };
-}
-
-function togglePlay(){
-
-    if(video.paused){
-        video.play();
-    }else{
-        video.pause();
-    }
-}
-
-function toggleBW(){
-    bw = !bw;
-}
-
-seek.oninput = () => {
-    video.currentTime = seek.value;
-};
-
-function loop(){
-
-    if(!running) return;
-
-    seek.value = video.currentTime;
-
-    const frame =
-        renderFrame(
-            video,
-            video.videoWidth,
-            video.videoHeight
-        );
-
-    asciiFrames.push(frame);
-
-    requestAnimationFrame(loop);
-}
-
-function renderFrame(source,w,h){
-
-    const cols =
-        Math.min(
-            Math.max(
-                Math.floor(w / 8),
-                160
-            ),
-            w
-        );
-
-    const charW = density.value;
-    const charH = density.value * 1.7;
-
-    const scale = cols / w;
-
-    const rows =
-        Math.floor(
-            h * scale * 0.55
-        );
-
-    canvas.width = cols * charW;
-    canvas.height = rows * charH;
-
-    ctx.drawImage(
-        source,
-        0,
-        0,
-        cols,
-        rows
-    );
-
-    const data =
-        ctx.getImageData(
-            0,
-            0,
-            cols,
-            rows
-        ).data;
-
-    ctx.fillStyle = "black";
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    ctx.font =
-        `${charH}px monospace`;
-
-    ctx.textBaseline = "top";
-
-    let frameText = "";
-
-    for(let y=0;y<rows;y++){
-
-        for(let x=0;x<cols;x++){
-
-            const i =
-                (y * cols + x) * 4;
-
-            let r = data[i];
-            let g = data[i+1];
-            let b = data[i+2];
-
-            if(bw){
-
-                const gray =
-                    (r+g+b)/3;
-
-                r = gray;
-                g = gray;
-                b = gray;
-            }
-
-            const brightness =
-                (r+g+b)/3;
-
-            const charIndex =
-                Math.floor(
-                    brightness / 255 *
-                    (chars.length - 1)
-                );
-
-            const ch =
-                chars[charIndex];
-
-            ctx.fillStyle =
-                `rgb(${r},${g},${b})`;
-
-            ctx.fillText(
-                ch,
-                x * charW,
-                y * charH
-            );
-
-            frameText += ch;
-        }
-
-        frameText += "\n";
-    }
-
-    return frameText;
-}
-
-downloadBtn.onclick = () => {
-
-    const blob =
-        new Blob(
-            [asciiFrames.join("\n---FRAME---\n")],
-            {type:"text/plain"}
-        );
-
-    const a =
-        document.createElement("a");
-
-    a.href =
-        URL.createObjectURL(blob);
-
-    a.download =
-        "poligonostic_ascii.txt";
-
-    a.click();
-};
-
-</script>
 
 </body>
 </html>
