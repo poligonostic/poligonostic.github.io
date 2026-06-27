@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Poligonostic Weather – Viewer</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Great Vibes&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
   body {
@@ -526,4 +526,11 @@
       weatherBg.appendChild(rain);
     }
 
-    if ((code >= 71 && code <= 
+    if ((code >= 71 && code <= 75) || (code >= 85 && code <= 86)) {
+      const snow = document.createElement("div");
+      snow.className = "snow";
+      for (let i = 0; i < 80; i++) {
+        const flake = document.createElement("div");
+        flake.className = "snowflake";
+        flake.style.left = Math.random() * 100 + "%";
+        flake.style.animation
