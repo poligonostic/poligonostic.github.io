@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Poligonostic Weather Maps</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    margin: 0;
+    background: #0b1226;
+    color: #e6ecff;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+  }
+
+  .sidebar {
+    width: 260px;
+    background: #0f1a33;
+    border-right: 2px solid #4ea3ff;
+    padding: 30px 20px;
+    height: 100vh;
+    box-sizing: border-box;
+  }
+
+  .sidebar h2 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 38px;
+    color: #4ea3ff;
+    margin: 0 0 20px 0;
+  }
+
+  .sidebar a {
+    display: block;
+    color: #cfe3ff;
+    text-decoration: none;
+    padding: 12px 0;
+    font-size: 18px;
+    border-bottom: 1px solid #1f2b4d;
+    transition: 0.2s;
+  }
+
+  .sidebar a:hover {
+    color: #4ea3ff;
+    padding-left: 6px;
+  }
+
+  .main {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+  }
+
+  .title {
+    font-family: 'Great Vibes', cursive;
+    font-size: 64px;
+    color: #4ea3ff;
+    margin: 0;
+  }
+
+  .subtitle {
+    margin-top: 10px;
+    font-size: 22px;
+    color: #9ccaff;
+  }
+
+  /* ⭐ Grid layout for smaller images */
+  .map-grid {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+  }
+
+  .map-card {
+    background: rgba(17,27,56,0.9);
+    border-radius: 16px;
+    border: 2px solid #4ea3ff;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(78,163,255,0.15);
+    text-align: center;
+  }
+
+  .map-card h3 {
+    margin-top: 0;
+    font-size: 22px;
+    color: #4ea3ff;
+  }
+
+  /* ⭐ Beautiful glowing borders for thumbnails */
+  .map-card img {
+    width: 100%;
+    border-radius: 16px;
+    border: 3px solid #4ea3ff;
+    box-shadow:
+      0 0 20px rgba(78,163,255,0.25),
+      0 0 6px rgba(78,163,255,0.45) inset;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .map-card img:hover {
+    transform: scale(1.03);
+    box-shadow:
+      0 0 28px rgba(78,163,255,0.35),
+      0 0 10px rgba(78,163,255,0.55) inset;
+  }
+
+  /* ⭐ Modal (click-to-enlarge) */
+  #modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+  }
+
+  #modal img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 16px;
+    border: 4px solid #4ea3ff;
+    box-shadow: 0 0 30px rgba(78,163,255,0.5);
+  }
+
+  #modal:active {
+    display: none;
+  }
+
+  footer {
+    margin-top: 40px;
+    padding: 10px 0;
+    font-size: 13px;
+    color: #7f93c2;
+    border-top: 1px solid #1f2b4d;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>Poligonostic</h2>
+  <a href="/">Home</a>
+  <a href="/weather/">Weather Viewer</a>
+  <a href="/radar/">Radar Viewer</a>
+  <a href="/satellite/">Satellite View</a>
+  <a href="/maps/">Weather Maps</a>
+  <a href="/plugin/">Plugin Docs</a>
+  <a href="/about/">About</a>
+</div>
+
+<div class="main">
+
+  <h1 class="title">Weather Maps</h1>
+  <div class="subtitle">Official NWS & WPC forecast graphics — auto‑updated throughout the day.</div>
+
+  <!-- ⭐ Grid of all maps -->
+  <div class="map-grid">
+
+    <div class="map-card">
+      <h3>National Alerts Map</h3>
+      <img src="https://www.weather.gov/wwamap/png/US.png">
+    </div>
+
+    <div class="map-card">
+      <h3>National Rainfall Forecast (QPF)</h3>
+      <img src="https://www.wpc.ncep.noaa.gov/qpf/94ewbg.gif">
+    </div>
+
+    <div class="map-card">
+      <h3>CONUS Max Temperature</h3>
+      <img src="https://graphical.weather.gov/images/conus/MaxT1_conus.png">
+    </div>
+
+    <div class="map-card">
+      <h3>National Forecast Overview</h3>
+      <img src="https://www.wpc.ncep.noaa.gov//noaa/national_forecast.jpg">
+    </div>
+
+    <div class="map-card">
+      <h3>Alaska Max Temperature</h3>
+      <img src="https://graphical.weather.gov/images/aktrimmed/MaxT1_aktrimmed.png">
+    </div>
+
+    <div class="map-card">
+      <h3>Puerto Rico Max Temperature</h3>
+      <img src="https://graphical.weather.gov/images/puertorico/MaxT1_puertorico.png">
+    </div>
+
+    <div class="map-card">
+      <h3>CONUS Sky Cover</h3>
+      <img src="https://graphical.weather.gov/images/conus/Sky4_conus.png">
+    </div>
+
+    <div class="map-card">
+      <h3>CONUS Probability of Precipitation</h3>
+      <img src="https://graphical.weather.gov/images/conus/PoP121_conus.png">
+    </div>
+
+    <div class="map-card">
+      <h3>CONUS Weather Type</h3>
+      <img src="https://graphical.weather.gov/images/conus/Wx4_conus.png">
+    </div>
+
+  </div>
+
+  <footer>
+    © 2026 Poligonostic Weather — NWS/WPC graphics used with attribution. Powered by LibreWXR, Leaflet, and the Poligonostic Leaflet Radar plugin.
+  </footer>
+
+</div>
+
+<!-- ⭐ Modal for enlarged images -->
+<div id="modal" onclick="this.style.display='none'">
+  <img id="modalImg">
+</div>
+
+<script>
+  // Click-to-enlarge functionality
+  document.querySelectorAll('.map-card img').forEach(img => {
+    img.addEventListener('click', () => {
+      const modal = document.getElementById('modal');
+      const modalImg = document.getElementById('modalImg');
+      modalImg.src = img.src;
+      modal.style.display = 'flex';
+    });
+  });
+</script>
+
+</body>
+</html>
