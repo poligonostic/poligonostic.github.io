@@ -32,6 +32,20 @@
     font-size: 18px;
     z-index: 999;
   }
+
+  .confirm-btn {
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: #0f1a33;
+    border: 2px solid #4ea3ff;
+    color: #e6ecff;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .confirm-btn:hover {
+    background: #14254a;
+  }
 </style>
 </head>
 
@@ -52,28 +66,48 @@
     maxZoom: 19
   }).addTo(map);
 
+  let marker;
+
   // Handle click
   map.on('click', async function(e) {
     const lat = e.latlng.lat;
     const lon = e.latlng.lng;
 
+    // Remove old marker
+    if (marker) map.removeLayer(marker);
+
+    // Add new marker
+    marker = L.marker([lat, lon]).addTo(map);
+
     // Reverse geocoding
-    const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en&format=json`;
+    let cityName = "Unknown Location";
 
-    const res = await fetch(url);
-    const data = await res.json();
+    try {
+      const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en&format=json`;
+      const res = await fetch(url);
+      const data = await res.json();
 
-    if (!data || !data.results || data.results.length === 0) {
-      alert("No nearby city found");
-      return;
+      if (data.results && data.results.length > 0) {
+        cityName = data.results[0].name;
+      }
+    } catch (err) {
+      cityName = "Unknown Location";
     }
 
-    const city = data.results[0];
-
-    // Redirect to weather page
-    window.location.href =
-      `/weather/?lat=${city.latitude}&lon=${city.longitude}&name=${encodeURIComponent(city.name)}`;
+    // Popup with confirm button
+    marker.bindPopup(`
+      <b>${cityName}</b><br>
+      <button class="confirm-btn" onclick="goToWeather(${lat}, ${lon}, '${cityName}')">
+        Use this location
+      </button>
+    `).openPopup();
   });
+
+  // Redirect function
+  function goToWeather(lat, lon, name) {
+    window.location.href =
+      `/weather/?lat=${lat}&lon=${lon}&name=${encodeURIComponent(name)}`;
+  }
 </script>
 
 </body>
