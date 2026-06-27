@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Select Location – Poligonostic Weather</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  body {
+    margin: 0;
+    background: #0b1226;
+    color: #e6ecff;
+    font-family: 'Inter', sans-serif;
+  }
+
+  #map {
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .info-box {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: #0f1a33;
+    padding: 15px 20px;
+    border-radius: 12px;
+    border: 2px solid #4ea3ff;
+    color: #e6ecff;
+    font-size: 18px;
+    z-index: 999;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="info-box">
+  Click anywhere on the map to choose your location
+</div>
+
+<div id="map"></div>
+
+<script>
+  // Create map
+  const map = L.map('map').setView([20, 0], 2);
+
+  // Add tiles
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+  }).addTo(map);
+
+  // Handle click
+  map.on('click', async function(e) {
+    const lat = e.latlng.lat;
+    const lon = e.latlng.lng;
+
+    // Reverse geocoding
+    const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en&format=json`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data || !data.results || data.results.length === 0) {
+      alert("No nearby city found");
+      return;
+    }
+
+    const city = data.results[0];
+
+    // Redirect to weather page
+    window.location.href =
+      `/weather/?lat=${city.latitude}&lon=${city.longitude}&name=${encodeURIComponent(city.name)}`;
+  });
+</script>
+
+</body>
+</html>
