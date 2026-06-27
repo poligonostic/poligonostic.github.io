@@ -29,8 +29,64 @@
     border-radius: 12px;
     border: 2px solid #4ea3ff;
     color: #e6ecff;
-    font-size: 18px;
+    font-size: 16px;
     z-index: 999;
+  }
+
+  .search-box {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #0f1a33;
+    padding: 15px 20px;
+    border-radius: 12px;
+    border: 2px solid #4ea3ff;
+    color: #e6ecff;
+    z-index: 999;
+    width: 280px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #4ea3ff;
+    background: #0b1226;
+    color: #e6ecff;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .search-box button {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #4ea3ff;
+    background: #14254a;
+    color: #e6ecff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .search-box button:hover {
+    background: #1b315c;
+  }
+
+  .results {
+    margin-top: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 13px;
+  }
+
+  .result-item {
+    padding: 6px 4px;
+    border-bottom: 1px solid #1f2b4d;
+    cursor: pointer;
+  }
+
+  .result-item:hover {
+    background: #1b2645;
   }
 
   .confirm-btn {
@@ -52,7 +108,15 @@
 <body>
 
 <div class="info-box">
-  Click anywhere on the map to choose your location
+  1) Search for a city<br>
+  2) Click a result<br>
+  3) Press “Use this location”
+</div>
+
+<div class="search-box">
+  <input id="searchInput" type="text" placeholder="Search for a city...">
+  <button onclick="searchCities()">Search</button>
+  <div id="results" class="results"></div>
 </div>
 
 <div id="map"></div>
@@ -64,41 +128,67 @@
     maxZoom: 19
   }).addTo(map);
 
-  let marker;
+  let marker = null;
+  let selectedCity = null;
 
-  map.on('click', async function(e) {
-    const lat = e.latlng.lat;
-    const lon = e.latlng.lng;
+  async function searchCities() {
+    const q = document.getElementById("searchInput").value.trim();
+    const resultsEl = document.getElementById("results");
+    resultsEl.innerHTML = "";
 
-    if (marker) map.removeLayer(marker);
+    if (!q) {
+      resultsEl.innerHTML = "<div>No query entered.</div>";
+      return;
+    }
 
-    marker = L.marker([lat, lon]).addTo(map);
-
-    let cityName = "Unknown Location";
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=10&language=en&format=json`;
 
     try {
-      const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en&format=json&distance=50`;
       const res = await fetch(url);
       const data = await res.json();
 
-      if (data.results && data.results.length > 0) {
-        cityName = data.results[0].name;
+      if (!data.results || data.results.length === 0) {
+        resultsEl.innerHTML = "<div>No locations found.</div>";
+        return;
       }
+
+      data.results.forEach((loc, idx) => {
+        const div = document.createElement("div");
+        div.className = "result-item";
+        div.textContent = `${loc.name}, ${loc.country} (${loc.latitude.toFixed(2)}, ${loc.longitude.toFixed(2)})`;
+        div.onclick = () => selectLocation(loc);
+        resultsEl.appendChild(div);
+      });
     } catch (err) {
-      cityName = "Unknown Location";
+      resultsEl.innerHTML = "<div>Error searching locations.</div>";
     }
+  }
+
+  function selectLocation(loc) {
+    selectedCity = loc;
+
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([loc.latitude, loc.longitude]).addTo(map);
+
+    map.setView([loc.latitude, loc.longitude], 8);
 
     marker.bindPopup(`
-      <b>${cityName}</b><br>
-      <button class="confirm-btn" onclick="goToWeather(${lat}, ${lon}, '${encodeURIComponent(cityName)}')">
+      <b>${loc.name}, ${loc.country}</b><br>
+      (${loc.latitude.toFixed(2)}, ${loc.longitude.toFixed(2)})<br>
+      <button class="confirm-btn" onclick="useSelectedLocation()">
         Use this location
       </button>
     `).openPopup();
-  });
+  }
 
-  function goToWeather(lat, lon, encodedName) {
-    window.location.href =
-      `/weather/?lat=${lat}&lon=${lon}&name=${encodedName}`;
+  function useSelectedLocation() {
+    if (!selectedCity) return;
+
+    const lat = selectedCity.latitude;
+    const lon = selectedCity.longitude;
+    const name = encodeURIComponent(selectedCity.name);
+
+    window.location.href = `/weather/?lat=${lat}&lon=${lon}&name=${name}`;
   }
 </script>
 
