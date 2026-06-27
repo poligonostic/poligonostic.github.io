@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>About – Poligonostic Weather</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    margin: 0;
+    background: #0b1226;
+    color: #e6ecff;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+  }
+
+  .sidebar {
+    width: 260px;
+    background: #0f1a33;
+    border-right: 2px solid #4ea3ff;
+    padding: 30px 20px;
+    height: 100vh;
+    box-sizing: border-box;
+  }
+
+  .sidebar h2 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 38px;
+    color: #4ea3ff;
+    margin: 0 0 20px 0;
+  }
+
+  .sidebar a {
+    display: block;
+    color: #cfe3ff;
+    text-decoration: none;
+    padding: 12px 0;
+    font-size: 18px;
+    border-bottom: 1px solid #1f2b4d;
+    transition: 0.2s;
+  }
+
+  .sidebar a:hover {
+    color: #4ea3ff;
+    padding-left: 6px;
+  }
+
+  .main {
+    flex: 1;
+    padding: 40px 60px;
+    box-sizing: border-box;
+  }
+
+  h1 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 60px;
+    color: #4ea3ff;
+    margin-top: 0;
+  }
+
+  h2 {
+    color: #9ccaff;
+    margin-top: 40px;
+  }
+
+  p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #d6e3ff;
+  }
+
+  .card {
+    background: rgba(17,27,56,0.9);
+    border: 2px solid #4ea3ff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-top: 30px;
+    box-shadow: 0 0 20px rgba(78,163,255,0.15);
+  }
+
+  ul {
+    margin-top: 10px;
+    font-size: 18px;
+    line-height: 1.7;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>Poligonostic</h2>
+  <a href="/">Home</a>
+  <a href="/weather/">Weather Viewer</a>
+  <a href="/radar/">Live Radar</a>
+  <a href="/satellite/">Satellite View</a>
+  <a href="/maps/">Weather Maps</a>
+  <a href="/plugin/">Plugin Docs</a>
+  <a href="/about/">About</a>
+</div>
+
+<div class="main">
+
+<h1>About Poligonostic Weather</h1>
+
+<p>
+Poligonostic Weather is a fully custom-built weather visualization system designed to be fast, beautiful, and completely free.  
+It uses open meteorological data, custom animations, and a unique location picker to create an interactive weather experience.
+</p>
+
+<h2>Data Sources</h2>
+
+<div class="card">
+  <ul>
+    <li><strong>Open‑Meteo API</strong> — Forecast, hourly data, daily data, weather codes</li>
+    <li><strong>OpenStreetMap</strong> — Map tiles for the location picker</li>
+    <li><strong>Leaflet.js</strong> — Mapping engine</li>
+    <li><strong>Custom Poligonostic Radar Plugin</strong> — Radar visualization</li>
+  </ul>
+</div>
+
+<h2>Features</h2>
+
+<div class="card">
+  <ul>
+    <li>Interactive map-based location picker</li>
+    <li>Realistic weather animations (sun, clouds, rain, snow, lightning)</li>
+    <li>7-day forecast</li>
+    <li>Hourly conditions</li>
+    <li>Metric/Imperial toggle</li>
+    <li>Favorites system</li>
+    <li>City + State formatting</li>
+    <li>Fast loading with zero API keys</li>
+  </ul>
+</div>
+
+<h2>Credits</h2>
+
+<div class="card">
+  <p>
+    Poligonostic Weather was created by The, with design, code, and animation systems built from scratch.  
+    Special thanks to Open‑Meteo, Leaflet, and OpenStreetMap for providing free and open tools that make this project possible.
+  </p>
+</div>
+
+</div>
+
+</body>
+</html>
