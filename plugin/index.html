@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Poligonostic Leaflet Radar Plugin</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    margin: 0;
+    background: #0b1226;
+    color: #e6ecff;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+  }
+
+  .sidebar {
+    width: 260px;
+    background: #0f1a33;
+    border-right: 2px solid #4ea3ff;
+    padding: 30px 20px;
+    height: 100vh;
+    box-sizing: border-box;
+  }
+
+  .sidebar h2 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 38px;
+    color: #4ea3ff;
+    margin: 0 0 20px 0;
+  }
+
+  .sidebar a {
+    display: block;
+    color: #cfe3ff;
+    text-decoration: none;
+    padding: 12px 0;
+    font-size: 18px;
+    border-bottom: 1px solid #1f2b4d;
+    transition: 0.2s;
+  }
+
+  .sidebar a:hover {
+    color: #4ea3ff;
+    padding-left: 6px;
+  }
+
+  .main {
+    flex: 1;
+    padding: 40px 60px;
+    box-sizing: border-box;
+  }
+
+  h1 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 60px;
+    color: #4ea3ff;
+    margin-top: 0;
+  }
+
+  h2 {
+    color: #9ccaff;
+    margin-top: 40px;
+  }
+
+  p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #d6e3ff;
+  }
+
+  .card {
+    background: rgba(17,27,56,0.9);
+    border: 2px solid #4ea3ff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-top: 30px;
+    box-shadow: 0 0 20px rgba(78,163,255,0.15);
+  }
+
+  pre {
+    background: #0f1a33;
+    border: 2px solid #4ea3ff;
+    padding: 20px;
+    border-radius: 12px;
+    overflow-x: auto;
+    color: #cfe3ff;
+    font-size: 15px;
+  }
+
+  ul {
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  .tag {
+    display: inline-block;
+    background: #14254a;
+    border: 1px solid #4ea3ff;
+    padding: 4px 10px;
+    border-radius: 10px;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>Poligonostic</h2>
+  <a href="/">Home</a>
+  <a href="/weather/">Weather Viewer</a>
+  <a href="/radar/">Live Radar</a>
+  <a href="/satellite/">Satellite View</a>
+  <a href="/maps/">Weather Maps</a>
+  <a href="/plugin/">Plugin Docs</a>
+  <a href="/about/">About</a>
+</div>
+
+<div class="main">
+
+<h1>Poligonostic Leaflet Radar Plugin</h1>
+
+<p>
+The Poligonostic Leaflet Radar Plugin is a Leaflet extension for displaying animated LibreWXR radar, satellite imagery, and weather alerts.  
+It is officially listed in the Leaflet Plugin Directory under <strong>overlay-animations</strong>.
+</p>
+
+<div class="card">
+  <span class="tag">radar</span>
+  <span class="tag">weather</span>
+  <span class="tag">satellite</span>
+  <span class="tag">alerts</span>
+  <span class="tag">animation</span>
+</div>
+
+<h2>Repository & Demo</h2>
+
+<div class="card">
+  <p><strong>GitHub Repo:</strong><br>
+  <a href="https://github.com/spoogle-search/poligonostic-leaflet-radar" style="color:#9ccaff;">
+    https://github.com/spoogle-search/poligonostic-leaflet-radar
+  </a></p>
+
+  <p><strong>Live Demo:</strong><br>
+  <a href="https://spoogle-search.github.io/poligonostic-leaflet-radar/examples/index.html" style="color:#9ccaff;">
+    https://spoogle-search.github.io/poligonostic-leaflet-radar/examples/index.html
+  </a></p>
+</div>
+
+<h2>Installation</h2>
+
+<div class="card">
+  <p><strong>NPM Install:</strong></p>
+  <pre>npm install poligonostic-leaflet-radar</pre>
+
+  <p><strong>CDN / Script Tag:</strong></p>
+  <pre>&lt;script src="poligonostic-leaflet-radar.js"&gt;&lt;/script&gt;</pre>
+</div>
+
+<h2>Basic Usage</h2>
+
+<div class="card">
+  <pre>
+const radar = L.poligonosticRadar({
+  opacity: 0.8,
+  animate: true,
+  smooth: true,
+  satellite: true,
+  alerts: true,
+  color: "classic",
+  updateInterval: 60000
+});
+
+radar.addTo(map);
+  </pre>
+</div>
+
+<h2>Options</h2>
+
+<div class="card">
+  <ul>
+    <li><strong>opacity</strong> — radar transparency (0–1)</li>
+    <li><strong>animate</strong> — enable radar animation</li>
+    <li><strong>smooth</strong> — fade transitions between frames</li>
+    <li><strong>satellite</strong> — toggle satellite imagery</li>
+    <li><strong>alerts</strong> — toggle weather alerts overlay</li>
+    <li><strong>color</strong> — radar color palette</li>
+    <li><strong>updateInterval</strong> — auto-refresh interval in ms</li>
+  </ul>
+</div>
+
+<h2>Radar Color Palettes</h2>
+
+<div class="card">
+  <p>Available color modes:</p>
+  <ul>
+    <li><strong>"classic"</strong> — standard radar colors</li>
+    <li><strong>"blue"</strong> — blue-scale precipitation</li>
+    <li><strong>"neon"</strong> — bright neon radar</li>
+    <li><strong>"grayscale"</strong> — black & white radar</li>
+  </ul>
+
+  <p>Example:</p>
+  <pre>
+const radar = L.poligonosticRadar({
+  color: "neon"
+});
+  </pre>
+</div>
+
+<h2>Satellite & Alerts Toggles</h2>
+
+<div class="card">
+  <p><strong>Turn satellite on/off:</strong></p>
+  <pre>
+radar.setSatellite(true);   // enable
+radar.setSatellite(false);  // disable
+  </pre>
+
+  <p><strong>Turn alerts on/off:</strong></p>
+  <pre>
+radar.setAlerts(true);   // enable
+radar.setAlerts(false);  // disable
+  </pre>
+</div>
+
+<h2>API Reference</h2>
+
+<div class="card">
+  <ul>
+    <li><strong>setOpacity(value)</strong></li>
+    <li><strong>setColor(mode)</strong></li>
+    <li><strong>setSatellite(bool)</strong></li>
+    <li><strong>setAlerts(bool)</strong></li>
+    <li><strong>refresh()</strong> — manually reload frames</li>
+    <li><strong>remove()</strong> — remove radar layer</li>
+  </ul>
+</div>
+
+<h2>License</h2>
+
+<div class="card">
+  <p>MIT License — free for personal and commercial use.</p>
+</div>
+
+</div>
+
+</body>
+</html>
