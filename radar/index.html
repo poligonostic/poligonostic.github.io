@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Poligonostic Radar Viewer</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+  body {
+    margin: 0;
+    background: #0b1226;
+    color: #e6ecff;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+  }
+
+  .sidebar {
+    width: 260px;
+    background: #0f1a33;
+    border-right: 2px solid #4ea3ff;
+    padding: 30px 20px;
+    height: 100vh;
+    box-sizing: border-box;
+  }
+
+  .sidebar h2 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 38px;
+    color: #4ea3ff;
+    margin: 0 0 20px 0;
+  }
+
+  .sidebar a {
+    display: block;
+    color: #cfe3ff;
+    text-decoration: none;
+    padding: 12px 0;
+    font-size: 18px;
+    border-bottom: 1px solid #1f2b4d;
+    transition: 0.2s;
+  }
+
+  .sidebar a:hover {
+    color: #4ea3ff;
+    padding-left: 6px;
+  }
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-sizing: border-box;
+  }
+
+  .header {
+    padding: 20px 40px;
+    border-bottom: 2px solid #4ea3ff;
+    background: #0f1a33;
+  }
+
+  .header-title {
+    font-family: 'Great Vibes', cursive;
+    font-size: 52px;
+    color: #4ea3ff;
+    margin: 0;
+  }
+
+  .header-sub {
+    margin-top: 4px;
+    font-size: 18px;
+    color: #9ccaff;
+  }
+
+  .content {
+    flex: 1;
+    display: flex;
+    padding: 20px 40px;
+    gap: 20px;
+    box-sizing: border-box;
+  }
+
+  .map-container {
+    position: relative;
+    flex: 2;
+    border-radius: 16px;
+    border: 2px solid #4ea3ff;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(78,163,255,0.2);
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+  }
+
+  .logo-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    background: rgba(11,18,38,0.8);
+    border-radius: 12px;
+    padding: 8px 14px;
+    border: 2px solid #4ea3ff;
+    font-family: 'Great Vibes', cursive;
+    font-size: 24px;
+    color: #4ea3ff;
+    pointer-events: none;
+  }
+
+  .fullscreen-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    background: #0f1a33;
+    border-radius: 12px;
+    padding: 8px 14px;
+    border: 2px solid #4ea3ff;
+    color: #e6ecff;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .fullscreen-btn:hover {
+    background: #14254a;
+  }
+
+  .controls {
+    flex: 1;
+    background: rgba(17,27,56,0.9);
+    border-radius: 16px;
+    border: 2px solid #4ea3ff;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(78,163,255,0.15);
+    box-sizing: border-box;
+  }
+
+  .controls h3 {
+    margin-top: 0;
+    font-size: 22px;
+    color: #4ea3ff;
+  }
+
+  .control-group {
+    margin-top: 18px;
+  }
+
+  .control-group label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 6px;
+    color: #cfe3ff;
+  }
+
+  .slider {
+    width: 100%;
+  }
+
+  select, input[type="checkbox"] {
+    margin-top: 4px;
+  }
+
+  select {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid #4ea3ff;
+    background: #0b1226;
+    color: #e6ecff;
+    font-size: 15px;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 15px;
+  }
+
+  footer {
+    padding: 10px 40px;
+    font-size: 13px;
+    color: #7f93c2;
+    background: #0f1a33;
+    border-top: 1px solid #1f2b4d;
+  }
+
+  /* Loading notice fade */
+  #loadingNotice {
+    transition: opacity 1.2s ease;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>Poligonostic</h2>
+  <a href="/">Home</a>
+  <a href="/weather/">Weather Viewer</a>
+  <a href="/radar/">Radar Viewer</a>
+  <a href="/satellite/">Satellite View</a>
+  <a href="/maps/">Weather Maps</a>
+  <a href="/plugin/">Plugin Docs</a>
+  <a href="/about/">About</a>
+</div>
+
+<div class="main">
+
+  <div class="header">
+    <h1 class="header-title">Poligonostic Radar Viewer</h1>
+    <div class="header-sub">
+      Animated LibreWXR radar, satellite, nowcast, and alerts with full time and color control.
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="map-container" id="mapContainer">
+      <div class="logo-overlay">Poligonostic</div>
+      <button class="fullscreen-btn" onclick="toggleFullscreen()">Fullscreen</button>
+      <div id="map"></div>
+    </div>
+
+    <div class="controls">
+
+      <!-- ⭐ Loading Notice -->
+      <div id="loadingNotice" 
+           style="background:#14254a;border:2px solid #4ea3ff;padding:12px;border-radius:12px;
+                  margin-bottom:20px;color:#cfe3ff;font-size:15px;">
+        Loading radar frames…  
+        <br>LibreWXR is warming up all 12 frames.  
+        <br>This may take up to a minute depending on your region and zoom.
+      </div>
+
+      <h3>Radar Controls</h3>
+
+      <div class="control-group">
+        <label for="timeSlider">Time (Past / Nowcast)</label>
+        <input id="timeSlider" class="slider" type="range" min="0" max="11" value="0" />
+        <div id="timeLabel" style="margin-top:6px;font-size:14px;color:#9ccaff;">
+          Frame: 0
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="colorSelect">Radar Color Palette</label>
+        <select id="colorSelect"></select>
+      </div>
+
+      <div class="control-group">
+        <label>Layers</label>
+        <div class="checkbox-row">
+          <input type="checkbox" id="radarToggle" checked />
+          <span>Radar</span>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="satelliteToggle" checked />
+          <span>Satellite</span>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="alertsToggle" checked />
+          <span>Weather Alerts</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Animation</label>
+        <div class="checkbox-row">
+          <input type="checkbox" id="animateToggle" checked />
+          <span>Animate frames</span>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="smoothToggle" checked />
+          <span>Smoothing</span>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="snowToggle" checked />
+          <span>Snow colors</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Update Interval (ms)</label>
+        <input id="updateInput" type="number" value="600000"
+               style="width:100%;padding:8px 10px;border-radius:10px;border:1px solid #4ea3ff;background:#0b1226;color:#e6ecff;font-size:15px;">
+      </div>
+
+      <div class="control-group">
+        <button onclick="applySettings()"
+                style="margin-top:10px;padding:10px 16px;border-radius:12px;border:2px solid #4ea3ff;background:#0f1a33;color:#e6ecff;cursor:pointer;">
+          Apply Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+   <footer>
+  © 2026 Poligonostic Weather — Powered by LibreWXR, Leaflet, and the Poligonostic Leaflet Radar plugin.
+</footer>
+
+  </footer>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const LIBREWXR_HOST = "https://api.librewxr.net";
+
+let map = L.map('map').setView([34.36, -92.81], 8);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  subdomains: 'abcd'
+}).addTo(map);
+
+let radarLayers = [];
+let satelliteLayers = [];
+let alertsLayer = null;
+
+let radarFrames = [];
+let satelliteFrames = [];
+let colorSchemes = [];
+let currentIndex = 0;
+
+let animate = true;
+let smooth = true;
+let snow = true;
+let paletteId = 10;
+let updateInterval = 600000;
+
+let animationTimer = null;
+let refreshTimer = null;
+
+const timeSlider = document.getElementById("timeSlider");
+const timeLabel = document.getElementById("timeLabel");
+const colorSelect = document.getElementById("colorSelect");
+
+async function loadMetadata() {
+  try {
+    const res = await fetch(`${LIBREWXR_HOST}/public/weather-maps.json`);
+    const meta = await res.json();
+
+    radarFrames = [...meta.radar.past, ...meta.radar.nowcast].slice(-12);
+    satelliteFrames = meta.satellite.infrared.slice(-12);
+    colorSchemes = meta.radar.colorSchemes;
+
+    buildColorSelect();
+    buildLayers();
+    restartAnimation();
+    restartRefresh();
+  } catch (e) {
+    console.error("Error loading metadata", e);
+  }
+}
+
+function buildColorSelect() {
+  colorSelect.innerHTML = "";
+  colorSchemes.forEach(cs => {
+    const opt = document.createElement("option");
+    opt.value = cs.id;
+    opt.textContent = `${cs.name} (${cs.id})`;
+    if (cs.id === paletteId) opt.selected = true;
+    colorSelect.appendChild(opt);
+  });
+}
+
+function buildLayers() {
+  radarLayers.forEach(l => map.removeLayer(l));
+  satelliteLayers.forEach(l => map.removeLayer(l));
+  radarLayers = [];
+  satelliteLayers = [];
+
+  radarFrames.forEach((frame, idx) => {
+    const radar = L.tileLayer(
+      `${LIBREWXR_HOST}${frame.path}/512/{z}/{x}/{y}/${paletteId}/${smooth ? "1" : "0"}_${snow ? "1" : "0"}.webp`,
+      { opacity: idx === currentIndex && document.getElementById("radarToggle").checked ? 0.7 : 0.001 }
+    );
+    radar.addTo(map);
+    radarLayers.push(radar);
+  });
+
+  satelliteFrames.forEach((frame, idx) => {
+    const sat = L.tileLayer(
+      `${LIBREWXR_HOST}${frame.path}/512/{z}/{x}/{y}/0/0_0.webp`,
+      { opacity: idx === currentIndex && document.getElementById("satelliteToggle").checked ? 0.5 : 0.001 }
+    );
+    sat.addTo(map);
+    satelliteLayers.push(sat);
+  });
+
+  if (!alertsLayer) {
+    alertsLayer = L.tileLayer(`${LIBREWXR_HOST}/v2/coverage/0/512/{z}/{x}/{y}/0/0_0.png`, {
+      opacity: document.getElementById("alertsToggle").checked ? 0.4 : 0
+    });
+    alertsLayer.addTo(map);
+  }
+
+  timeSlider.max = radarFrames.length - 1;
+  updateTimeLabel();
+
+  hideLoadingNotice();
+}
+
+function hideLoadingNotice() {
+  const notice = document.getElementById("loadingNotice");
+  if (!notice) return;
+  notice.style.opacity = "0";
+  setTimeout(() => notice.style.display = "none", 1200);
+}
+
+function updateTimeLabel() {
+  const frame = radarFrames[currentIndex];
+  timeLabel.textContent = `Frame: ${currentIndex} (time ${frame.time})`;
+}
+
+timeSlider.addEventListener("input", () => {
+  currentIndex = parseInt(timeSlider.value, 10);
+  setFrame(currentIndex);
+});
+
+function setFrame(index) {
+  radarLayers.forEach((layer, i) => {
+    const on = document.getElementById("radarToggle").checked;
+    layer.setOpacity(on ? (i === index ? 0.7 : 0.001) : 0);
+  });
+  satelliteLayers.forEach((layer, i) => {
+    const on = document.getElementById("satelliteToggle").checked;
+    layer.setOpacity(on ? (i === index ? 0.5 : 0.001) : 0);
+  });
+  updateTimeLabel();
+}
+
+colorSelect.addEventListener("change", () => {
+  paletteId = parseInt(colorSelect.value, 10);
+  buildLayers();
+});
+
+document.getElementById("radarToggle").addEventListener("change", (e) => {
+  const on = e.target.checked;
+  radarLayers.forEach((layer, i) => {
+    layer.setOpacity(on ? (i === currentIndex ? 0.7 : 0.001) : 0);
+  });
+});
+
+document.getElementById("satelliteToggle").addEventListener("change", (e) => {
+  const on = e.target.checked;
+  satelliteLayers.forEach((layer, i) => {
+    layer.setOpacity(on ? (i === currentIndex ? 0.5 : 0.001) : 0);
+  });
+});
+
+document.getElementById("alertsToggle").addEventListener("change", (e) => {
+  const on = e.target.checked;
+  if (alertsLayer) alertsLayer.setOpacity(on ? 0.4 : 0);
+});
+
+document.getElementById("animateToggle").addEventListener("change", (e) => {
+  animate = e.target.checked;
+  restartAnimation();
+});
+
+document.getElementById("smoothToggle").addEventListener("change", (e) => {
+  smooth = e.target.checked;
+  buildLayers();
+});
+
+document.getElementById("snowToggle").addEventListener("change", (e) => {
+  snow = e.target.checked;
+  buildLayers();
+});
+
+function applySettings() {
+  const val = parseInt(document.getElementById("updateInput").value, 10);
+  updateInterval = isNaN(val) ? 600000 : val;
+  restartRefresh();
+}
+
+function restartAnimation() {
+  if (animationTimer) clearInterval(animationTimer);
+  if (!animate || !radarFrames.length) return;
+  animationTimer = setInterval(() => {
+    currentIndex = (currentIndex + 1) % radarFrames.length;
+    timeSlider.value = currentIndex;
+    setFrame(currentIndex);
+  }, 1000);
+}
+
+async function refreshMetadata() {
+  try {
+    const res = await fetch(`${LIBREWXR_HOST}/public/weather-maps.json`);
+    const meta = await res.json();
+
+    radarFrames = [...meta.radar.past, ...meta.radar.nowcast].slice(-12);
+    satelliteFrames = meta.satellite.infrared.slice(-12);
+
+    buildLayers();
+  } catch (e) {
+    console.error("Error refreshing metadata", e);
+  }
+}
+
+function restartRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(refreshMetadata, updateInterval);
+}
+
+function toggleFullscreen() {
+  const container = document.getElementById("mapContainer");
+  if (!document.fullscreenElement) {
+    container.requestFullscreen().catch(err => console.error(err));
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+loadMetadata();
+</script>
+
+</body>
+</html>
