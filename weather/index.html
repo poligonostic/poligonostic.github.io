@@ -21,6 +21,7 @@
     border-right: 2px solid #4ea3ff;
     padding: 30px 20px;
     height: 100vh;
+    box-sizing: border-box;
   }
 
   .sidebar h2 {
@@ -37,6 +38,7 @@
     padding: 12px 0;
     font-size: 18px;
     border-bottom: 1px solid #1f2b4d;
+    transition: 0.2s;
   }
 
   .sidebar a:hover {
@@ -62,6 +64,11 @@
     color: #e6ecff;
     cursor: pointer;
     z-index: 10;
+    font-size: 14px;
+  }
+
+  .unit-toggle:hover {
+    background: #14254a;
   }
 
   .weather-header {
@@ -108,16 +115,20 @@
     margin-top: 25px;
     display: flex;
     gap: 12px;
+    flex-wrap: wrap;
   }
 
   .search-box {
     flex: 1;
+    min-width: 240px;
     padding: 14px 20px;
     border-radius: 40px;
     border: 2px solid #4ea3ff;
     background: #0f1a33;
     color: #e6ecff;
     font-size: 18px;
+    outline: none;
+    box-shadow: 0 0 10px rgba(78,163,255,0.2);
   }
 
   .btn {
@@ -126,13 +137,20 @@
     border: 2px solid #4ea3ff;
     background: #0f1a33;
     color: #e6ecff;
+    font-size: 16px;
     cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .btn:hover {
+    background: #14254a;
   }
 
   .weather-body {
     flex: 1;
     padding: 40px 50px;
     overflow-y: auto;
+    box-sizing: border-box;
   }
 
   .cards-row {
@@ -148,12 +166,22 @@
     padding: 25px;
     min-width: 280px;
     flex: 1;
+    box-sizing: border-box;
+    box-shadow: 0 0 20px rgba(78,163,255,0.15);
+  }
+
+  .card h3 {
+    margin-top: 0;
+    font-size: 22px;
+    color: #4ea3ff;
   }
 
   .forecast-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 16px;
+    margin-top: 10px;
+    overflow: hidden; /* hide scrollbars */
   }
 
   .forecast-item {
@@ -163,70 +191,125 @@
     border: 1px solid #2b3c6f;
   }
 
-  /* Animations */
+  .forecast-item strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #9ccaff;
+  }
+
+  footer {
+    margin-top: 25px;
+    font-size: 13px;
+    color: #7f93c2;
+  }
+
+  /* Hide scrollbars globally if needed */
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* --- REAL SUN --- */
   .sun {
     position: absolute;
-    width: 140px;
-    height: 140px;
+    width: 160px;
+    height: 160px;
     top: 10%;
     left: 10%;
     border-radius: 50%;
-    background: radial-gradient(circle, #FFD700, #FFA500);
-    box-shadow: 0 0 50px rgba(255,215,0,0.5);
+    background: radial-gradient(circle, #fff9a6, #ffd700, #ffae00);
+    box-shadow: 0 0 60px rgba(255,200,0,0.7);
+    animation: sunPulse 6s ease-in-out infinite;
   }
 
+  @keyframes sunPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+
+  /* --- REAL CLOUDS --- */
   .cloud {
     position: absolute;
     background: #fff;
     border-radius: 50%;
-    width: 220px;
-    height: 70px;
-    animation: moveClouds 30s linear infinite;
+    width: 180px;
+    height: 60px;
+    opacity: 0.9;
+    filter: blur(1px);
+    animation: cloudDrift linear infinite;
   }
 
-  @keyframes moveClouds {
-    0% { transform: translateX(-120%); }
-    100% { transform: translateX(120%); }
+  .cloud::before,
+  .cloud::after {
+    content: '';
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
   }
 
-  .rain .raindrop {
+  .cloud::before {
+    width: 120px;
+    height: 120px;
+    top: -40px;
+    left: 20px;
+  }
+
+  .cloud::after {
+    width: 140px;
+    height: 100px;
+    top: -30px;
+    left: 80px;
+  }
+
+  @keyframes cloudDrift {
+    0% { transform: translateX(-200px); }
+    100% { transform: translateX(120vw); }
+  }
+
+  /* --- REAL RAIN --- */
+  .raindrop {
     position: absolute;
     width: 2px;
-    height: 14px;
-    background: rgba(120,180,255,0.7);
-    animation: fall 1s linear infinite;
+    height: 18px;
+    background: rgba(120,180,255,0.8);
+    transform: rotate(10deg);
+    animation: rainFall 0.8s linear infinite;
   }
 
-  @keyframes fall {
-    0% { top: -10px; }
-    100% { top: 100%; }
+  @keyframes rainFall {
+    0% { top: -20px; left: 0; }
+    100% { top: 100%; left: 10px; }
   }
 
-  .snow .snowflake {
+  /* --- REAL SNOW --- */
+  .snowflake {
     position: absolute;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: rgba(255,255,255,0.9);
-    animation: snowFall 4s linear infinite;
+    animation: snowDrift 5s linear infinite;
   }
 
-  @keyframes snowFall {
-    0% { top: -10px; }
-    100% { top: 100%; transform: translateX(20px); }
+  @keyframes snowDrift {
+    0% { top: -10px; transform: translateX(0); }
+    100% { top: 100%; transform: translateX(30px); }
   }
 
+  /* --- REAL LIGHTNING --- */
   .flash {
     position: absolute;
     inset: 0;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.8);
     opacity: 0;
-    animation: flashStorm 3s linear infinite;
+    animation: lightningFlash 3s infinite;
   }
 
-  @keyframes flashStorm {
-    0%, 80%, 100% { opacity: 0; }
+  @keyframes lightningFlash {
+    0%, 95%, 100% { opacity: 0; }
+    20% { opacity: 1; }
+    22% { opacity: 0; }
     40% { opacity: 1; }
+    42% { opacity: 0; }
   }
 </style>
 </head>
@@ -278,6 +361,10 @@
       </div>
     </div>
   </div>
+
+  <footer>
+    © 2026 Poligonostic Weather — Open data from Open‑Meteo.
+  </footer>
 </div>
 
 </div>
@@ -285,48 +372,61 @@
 <script>
 let useImperial = false;
 
-// URL READER — FINAL FIX
+// URL params
 const params = new URLSearchParams(window.location.search);
-
 const lat = Number(params.get("lat"));
 const lon = Number(params.get("lon"));
 const name = params.get("name");
 
+const locationNameEl = document.getElementById("locationName");
+const weatherBg = document.getElementById("weatherBg");
+const currentCard = document.getElementById("currentCard");
+const forecastGrid = document.getElementById("forecastGrid");
+
 if (!lat || !lon || !name) {
-  document.getElementById("locationName").textContent = "Invalid location";
+  locationNameEl.textContent = "Invalid location";
+  currentCard.innerHTML = "<h3>Current Conditions</h3><p>Location data missing.</p>";
+  forecastGrid.innerHTML = "<p>No forecast available.</p>";
   throw new Error("Missing URL parameters");
 }
 
-document.getElementById("locationName").textContent = decodeURIComponent(name);
+// decode name (e.g. "Malvern,%20AR")
+locationNameEl.textContent = decodeURIComponent(name);
 
-// WEATHER FETCH — FINAL FIX
+// Fetch weather
 async function fetchWeather(lat, lon) {
-  const url =
-    "https://api.open-meteo.com/v1/forecast" +
-    "?latitude=" + lat +
-    "&longitude=" + lon +
-    "&current_weather=true" +
-    "&hourly=weathercode,temperature_2m,wind_speed_10m,wind_direction_10m" +
-    "&daily=weathercode,temperature_2m_max,temperature_2m_min,wind_speed_10m_max" +
-    "&timezone=auto";
+  try {
+    const url =
+      "https://api.open-meteo.com/v1/forecast" +
+      "?latitude=" + lat +
+      "&longitude=" + lon +
+      "&current_weather=true" +
+      "&hourly=weathercode,temperature_2m,wind_speed_10m,wind_direction_10m" +
+      "&daily=weathercode,temperature_2m_max,temperature_2m_min,wind_speed_10m_max" +
+      "&timezone=auto";
 
-  const res = await fetch(url);
-  const data = await res.json();
+    const res = await fetch(url);
+    const data = await res.json();
 
-  updateCurrent(data);
-  updateForecast(data);
-  updateAnimation(data);
+    updateCurrent(data);
+    updateForecast(data);
+    updateAnimation(data);
+  } catch (err) {
+    console.error(err);
+    currentCard.innerHTML = "<h3>Current Conditions</h3><p>Unable to load weather.</p>";
+    forecastGrid.innerHTML = "<p>Unable to load forecast.</p>";
+  }
 }
 
 fetchWeather(lat, lon);
 
-// UNIT TOGGLE
+// Unit toggle
 function toggleUnits() {
   useImperial = !useImperial;
   fetchWeather(lat, lon);
 }
 
-// WEATHER CODE → TEXT
+// Weather code → text
 function codeToText(code) {
   if (code === 0) return "Clear sky";
   if (code <= 2) return "Mostly clear";
@@ -343,7 +443,7 @@ function codeToText(code) {
   return "Unknown";
 }
 
-// CURRENT CONDITIONS
+// Current conditions
 function updateCurrent(data) {
   const cw = {
     weathercode: data.hourly.weathercode[0],
@@ -361,7 +461,7 @@ function updateCurrent(data) {
     wind = wind / 1.609;
   }
 
-  document.getElementById("currentCard").innerHTML = `
+  currentCard.innerHTML = `
     <h3>Current Conditions</h3>
     <p><strong>${codeToText(cw.weathercode)}</strong></p>
     <p>Temperature: ${Math.round(temp)} °${useImperial ? "F" : "C"}</p>
@@ -371,13 +471,16 @@ function updateCurrent(data) {
   `;
 }
 
-// FORECAST
+// Forecast
 function updateForecast(data) {
   const daily = data.daily;
-  const grid = document.getElementById("forecastGrid");
-  grid.innerHTML = "";
+  if (!daily || !daily.time) {
+    forecastGrid.innerHTML = "<p>No forecast data.</p>";
+    return;
+  }
 
-  for (let i = 0; i < 7; i++) {
+  forecastGrid.innerHTML = "";
+  for (let i = 0; i < daily.time.length && i < 7; i++) {
     let tmin = daily.temperature_2m_min[i];
     let tmax = daily.temperature_2m_max[i];
     let wind = daily.wind_speed_10m_max[i];
@@ -391,74 +494,90 @@ function updateForecast(data) {
     const item = document.createElement("div");
     item.className = "forecast-item";
     item.innerHTML = `
-      <strong>${new Date(daily.time[i]).toLocaleDateString()}</strong>
+      <strong>${new Date(daily.time[i]).toLocaleDateString([], {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      })}</strong>
       <p>${codeToText(daily.weathercode[i])}</p>
       <p>${Math.round(tmin)}–${Math.round(tmax)} °${useImperial ? "F" : "C"}</p>
       <p>Wind max: ${Math.round(wind)} ${useImperial ? "mph" : "km/h"}</p>
     `;
-    grid.appendChild(item);
+    forecastGrid.appendChild(item);
   }
 }
 
-// ANIMATION
+// Animation
 function updateAnimation(data) {
-  const bg = document.getElementById("weatherBg");
-  bg.innerHTML = "";
-
+  weatherBg.innerHTML = "";
   const code = data.hourly.weathercode[0];
 
+  // Sun
   if (code <= 2) {
-    bg.innerHTML = `<div class="sun"></div>`;
+    const sun = document.createElement("div");
+    sun.className = "sun";
+    weatherBg.appendChild(sun);
   }
 
+  // Clouds
   if (code === 3 || (code >= 45 && code <= 48)) {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       const cloud = document.createElement("div");
       cloud.className = "cloud";
-      cloud.style.top = `${10 + i * 15}%`;
-      cloud.style.left = `${i * 20}%`;
-      cloud.style.animationDuration = `${25 + i * 5}s`;
-      bg.appendChild(cloud);
+      cloud.style.top = `${Math.random() * 40 + 5}%`;
+      cloud.style.left = `${Math.random() * 20 - 20}%`;
+      cloud.style.animationDuration = `${20 + Math.random() * 20}s`;
+      weatherBg.appendChild(cloud);
     }
   }
 
+  // Rain
   if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
     const rain = document.createElement("div");
     rain.className = "rain";
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < 150; i++) {
       const drop = document.createElement("div");
       drop.className = "raindrop";
       drop.style.left = Math.random() * 100 + "%";
-      drop.style.animationDuration = (0.6 + Math.random() * 0.6) + "s";
+      drop.style.animationDuration = (0.5 + Math.random() * 0.5) + "s";
       rain.appendChild(drop);
     }
-    bg.appendChild(rain);
+    weatherBg.appendChild(rain);
   }
 
+  // Snow
   if ((code >= 71 && code <= 75) || (code >= 85 && code <= 86)) {
     const snow = document.createElement("div");
     snow.className = "snow";
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 100; i++) {
       const flake = document.createElement("div");
       flake.className = "snowflake";
       flake.style.left = Math.random() * 100 + "%";
       flake.style.animationDuration = (3 + Math.random() * 3) + "s";
       snow.appendChild(flake);
     }
-    bg.appendChild(snow);
+    weatherBg.appendChild(snow);
   }
 
+  // Lightning
   if (code >= 95 && code <= 99) {
-    bg.innerHTML += `<div class="flash"></div>`;
+    const flash = document.createElement("div");
+    flash.className = "flash";
+    weatherBg.appendChild(flash);
   }
 }
 
-// SEARCH
+// Search
 async function searchLocation() {
   const q = document.getElementById("searchInput").value.trim();
-  if (!q) return alert("Type a city name");
+  if (!q) {
+    alert("Type a city name");
+    return;
+  }
 
-  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1`);
+  const res = await fetch(
+    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`
+  );
   const data = await res.json();
 
   if (!data.results || data.results.length === 0) {
@@ -467,18 +586,21 @@ async function searchLocation() {
   }
 
   const loc = data.results[0];
-  window.location.href = `/weather/?lat=${loc.latitude}&lon=${loc.longitude}&name=${encodeURIComponent(loc.name)}`;
+  const fullName = `${loc.name}, ${loc.admin1 || ""}`.trim();
+
+  window.location.href =
+    `/weather/?lat=${loc.latitude}&lon=${loc.longitude}&name=${encodeURIComponent(fullName)}`;
 }
 
-// MAP REDIRECT
+// Map redirect
 function findMyLocation() {
   window.location.href = "/weather/map.html";
 }
 
-// FAVORITES
+// Favorites
 function addFavorite() {
   const favs = JSON.parse(localStorage.getItem("favorites") || "[]");
-  favs.push({ lat, lon, name });
+  favs.push({ lat, lon, name: decodeURIComponent(name) });
   localStorage.setItem("favorites", JSON.stringify(favs));
   alert("Added to favorites");
 }
