@@ -36,7 +36,6 @@
     padding: 12px 0;
     font-size: 18px;
     border-bottom: 1px solid #1f2b4d;
-    transition: 0.2s;
   }
 
   .sidebar a:hover {
@@ -61,12 +60,6 @@
     background: #0f1a33;
     color: #e6ecff;
     cursor: pointer;
-    z-index: 10;
-    font-size: 14px;
-  }
-
-  .unit-toggle:hover {
-    background: #14254a;
   }
 
   .weather-header {
@@ -100,61 +93,18 @@
     font-family: 'Great Vibes', cursive;
     font-size: 60px;
     color: #4ea3ff;
-    margin: 0;
   }
 
   .location-name {
     font-size: 26px;
     color: #9ccaff;
-    margin-top: 4px;
-  }
-
-  .header-row {
-    margin-top: 25px;
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .search-box {
-    flex: 1;
-    min-width: 240px;
-    padding: 14px 20px;
-    border-radius: 40px;
-    border: 2px solid #4ea3ff;
-    background: #0f1a33;
-    color: #e6ecff;
-    font-size: 18px;
-    outline: none;
-    box-shadow: 0 0 10px rgba(78,163,255,0.2);
-  }
-
-  .btn {
-    padding: 12px 20px;
-    border-radius: 30px;
-    border: 2px solid #4ea3ff;
-    background: #0f1a33;
-    color: #e6ecff;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  .btn:hover {
-    background: #14254a;
-  }
-
-  .weather-body {
-    flex: 1;
-    padding: 40px 50px;
-    overflow-y: auto;
-    box-sizing: border-box;
   }
 
   .cards-row {
     display: flex;
     gap: 25px;
     flex-wrap: wrap;
+    padding: 40px;
   }
 
   .card {
@@ -162,146 +112,30 @@
     border: 2px solid #4ea3ff;
     border-radius: 16px;
     padding: 25px;
-    min-width: 280px;
     flex: 1;
-    box-sizing: border-box;
-    box-shadow: 0 0 20px rgba(78,163,255,0.15);
-  }
-
-  .card h3 {
-    margin-top: 0;
-    font-size: 22px;
-    color: #4ea3ff;
+    min-width: 280px;
   }
 
   .forecast-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 16px;
-    margin-top: 10px;
-    overflow: hidden;
   }
 
   .forecast-item {
     background: #111b38;
     border-radius: 12px;
-    padding: 12px 14px;
+    padding: 12px;
     border: 1px solid #2b3c6f;
   }
 
-  .forecast-item strong {
-    display: block;
-    margin-bottom: 4px;
-    color: #9ccaff;
+  .sun { width:160px;height:160px;border-radius:50%;
+    background: radial-gradient(circle,#fff9a6,#ffd700,#ffae00);
+    position:absolute;top:10%;left:10%;
   }
 
-  footer {
-    margin-top: 25px;
-    font-size: 13px;
-    color: #7f93c2;
-  }
-
-  *::-webkit-scrollbar {
-    display: none;
-  }
-
-  .sun {
-    position: absolute;
-    width: 160px;
-    height: 160px;
-    top: 10%;
-    left: 10%;
-    border-radius: 50%;
-    background: radial-gradient(circle, #fff9a6, #ffd700, #ffae00);
-    box-shadow: 0 0 60px rgba(255,200,0,0.7);
-    animation: sunPulse 6s ease-in-out infinite;
-  }
-
-  @keyframes sunPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-  }
-
-  .cloud {
-    position: absolute;
-    background: #fff;
-    border-radius: 50%;
-    width: 180px;
-    height: 60px;
-    opacity: 0.9;
-    filter: blur(1px);
-    animation: cloudDrift linear infinite;
-  }
-
-  .cloud::before,
-  .cloud::after {
-    content: '';
-    position: absolute;
-    background: #fff;
-    border-radius: 50%;
-  }
-
-  .cloud::before {
-    width: 120px;
-    height: 120px;
-    top: -40px;
-    left: 20px;
-  }
-
-  .cloud::after {
-    width: 140px;
-    height: 100px;
-    top: -30px;
-    left: 80px;
-  }
-
-  @keyframes cloudDrift {
-    0% { transform: translateX(-200px); }
-    100% { transform: translateX(120vw); }
-  }
-
-  .raindrop {
-    position: absolute;
-    width: 2px;
-    height: 18px;
-    background: rgba(120,180,255,0.8);
-    transform: rotate(10deg);
-    animation: rainFall 0.8s linear infinite;
-  }
-
-  @keyframes rainFall {
-    0% { top: -20px; left: 0; }
-    100% { top: 100%; left: 10px; }
-  }
-
-  .snowflake {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.9);
-    animation: snowDrift 5s linear infinite;
-  }
-
-  @keyframes snowDrift {
-    0% { top: -10px; transform: translateX(0); }
-    100% { top: 100%; transform: translateX(30px); }
-  }
-
-  .flash {
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.2);
-    opacity: 0;
-    animation: lightningFlash 3s infinite;
-  }
-
-  @keyframes lightningFlash {
-    0%, 95%, 100% { opacity: 0; }
-    20% { opacity: 1; }
-    22% { opacity: 0; }
-    40% { opacity: 1; }
-    42% { opacity: 0; }
+  .cloud, .raindrop, .snowflake, .flash {
+    position:absolute;
   }
 </style>
 </head>
@@ -312,10 +146,6 @@
   <h2>Poligonostic</h2>
   <a href="/">Home</a>
   <a href="/weather/">Weather Viewer</a>
-  <a href="/radar/">Live Radar</a>
-  <a href="/satellite/">Satellite View</a>
-  <a href="/maps/">Weather Maps</a>
-  <a href="/about/">About</a>
 </div>
 
 <div class="main">
@@ -327,31 +157,16 @@
   <div class="blur-overlay"></div>
 
   <div class="header-content">
-    <h1 class="title">Poligonostic Weather</h1>
-    <div class="location-name" id="locationName">Invalid location</div>
-
-    <div class="header-row">
-      <input id="searchInput" class="search-box" type="text" placeholder="Search for a city...">
-      <button class="btn" onclick="searchLocation()">Search</button>
-      <button class="btn" onclick="findMyLocation()">Find My Location</button>
-      <button class="btn" onclick="addFavorite()">⭐ Add to Favorites</button>
-    </div>
+    <div class="title">Poligonostic Weather</div>
+    <div class="location-name" id="locationName">Loading...</div>
   </div>
 </div>
 
-<div class="weather-body">
-  <div class="cards-row">
-    <div class="card" id="currentCard"><h3>Current Conditions</h3><p>Location data missing.</p></div>
-
-    <div class="card">
-      <h3>7-Day Forecast</h3>
-      <div class="forecast-grid" id="forecastGrid"><p>No forecast available.</p></div>
-    </div>
+<div class="cards-row">
+  <div class="card" id="currentCard">Loading...</div>
+  <div class="card">
+    <div class="forecast-grid" id="forecastGrid"></div>
   </div>
-
-  <footer>
-    © 2026 Poligonostic Weather — Open data from weather.gov
-  </footer>
 </div>
 
 </div>
@@ -365,41 +180,37 @@ const lon = Number(params.get("lon"));
 const name = params.get("name");
 
 const locationNameEl = document.getElementById("locationName");
-const weatherBg = document.getElementById("weatherBg");
 const currentCard = document.getElementById("currentCard");
 const forecastGrid = document.getElementById("forecastGrid");
+const weatherBg = document.getElementById("weatherBg");
 
-if (!lat || !lon || !name) {
-  locationNameEl.textContent = "Invalid location";
-  currentCard.innerHTML = "<h3>Current Conditions</h3><p>Location data missing.</p>";
-  forecastGrid.innerHTML = "<p>No forecast available.</p>";
-  throw new Error("Missing URL parameters");
-}
+locationNameEl.textContent = decodeURIComponent(name || "Unknown");
 
-locationNameEl.textContent = decodeURIComponent(name);
-
-// ✅ FIXED WEATHER.GOV (NO MORE 196°F BUG)
 async function fetchWeather(lat, lon) {
   try {
     const pointRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
     const pointData = await pointRes.json();
 
-    const hourlyUrl = pointData.properties.forecastHourly;
+    const hourlyUrl =
+      pointData?.properties?.forecastHourly ||
+      pointData?.properties?.forecast;
+
+    if (!hourlyUrl) throw new Error("No forecast endpoint");
+
     const res = await fetch(hourlyUrl);
-    const dataRaw = await res.json();
+    const data = await res.json();
 
-    const periods = dataRaw.properties.periods;
+    const periods = data.properties?.periods || [];
 
-    function toCode(text) {
-      text = text.toLowerCase();
-      if (text.includes("thunder")) return 95;
-      if (text.includes("snow")) return 73;
-      if (text.includes("rain") || text.includes("shower")) return 61;
-      if (text.includes("fog")) return 45;
-      if (text.includes("cloud")) return 3;
-      if (text.includes("clear")) return 0;
+    const toCode = t => {
+      t = (t || "").toLowerCase();
+      if (t.includes("thunder")) return 95;
+      if (t.includes("snow")) return 73;
+      if (t.includes("rain")) return 61;
+      if (t.includes("cloud")) return 3;
+      if (t.includes("clear")) return 0;
       return 1;
-    }
+    };
 
     let hourly = {
       weathercode: [],
@@ -409,52 +220,28 @@ async function fetchWeather(lat, lon) {
       time: []
     };
 
+    let daily = { time:[], weathercode:[], temperature_2m_min:[], temperature_2m_max:[], wind_speed_10m_max:[] };
+    let map = {};
+
     periods.forEach(p => {
       let temp = p.temperature;
-
-      // 🚨 FIX: respect unit instead of assuming
-      if (p.temperatureUnit === "C") {
-        temp = temp * 9/5 + 32;
-      }
+      if (p.temperatureUnit === "C") temp = temp * 9/5 + 32;
 
       hourly.weathercode.push(toCode(p.shortForecast));
       hourly.temperature_2m.push(temp);
       hourly.wind_speed_10m.push(parseFloat(p.windSpeed) || 0);
       hourly.wind_direction_10m.push(0);
       hourly.time.push(p.startTime);
+
+      const d = p.startTime.split("T")[0];
+      if (!map[d]) map[d] = {min:999,max:-999,code:toCode(p.shortForecast),wind:0};
+
+      map[d].min = Math.min(map[d].min, temp);
+      map[d].max = Math.max(map[d].max, temp);
+      map[d].wind = Math.max(map[d].wind, parseFloat(p.windSpeed) || 0);
     });
 
-    let daily = {
-      time: [],
-      weathercode: [],
-      temperature_2m_min: [],
-      temperature_2m_max: [],
-      wind_speed_10m_max: []
-    };
-
-    let map = {};
-
-    periods.forEach(p => {
-      const date = p.startTime.split("T")[0];
-
-      if (!map[date]) {
-        map[date] = {
-          min: Infinity,
-          max: -Infinity,
-          code: toCode(p.shortForecast),
-          wind: 0
-        };
-      }
-
-      let temp = p.temperature;
-      if (p.temperatureUnit === "C") temp = temp * 9/5 + 32;
-
-      map[date].min = Math.min(map[date].min, temp);
-      map[date].max = Math.max(map[date].max, temp);
-      map[date].wind = Math.max(map[date].wind, parseFloat(p.windSpeed) || 0);
-    });
-
-    Object.keys(map).slice(0, 7).forEach(d => {
+    Object.keys(map).slice(0,7).forEach(d=>{
       daily.time.push(d);
       daily.weathercode.push(map[d].code);
       daily.temperature_2m_min.push(map[d].min);
@@ -462,43 +249,55 @@ async function fetchWeather(lat, lon) {
       daily.wind_speed_10m_max.push(map[d].wind);
     });
 
-    const weatherData = { hourly, daily };
+    updateCurrent({hourly});
+    updateForecast({daily});
+    updateAnimation({hourly});
 
-    updateCurrent(weatherData);
-    updateForecast(weatherData);
-    updateAnimation(weatherData);
-
-  } catch (err) {
-    console.error(err);
-    currentCard.innerHTML = "<h3>Current Conditions</h3><p>Unable to load weather.</p>";
-    forecastGrid.innerHTML = "<p>Unable to load forecast.</p>";
+  } catch (e) {
+    console.error(e);
+    currentCard.textContent = "Unable to load weather";
   }
 }
 
 fetchWeather(lat, lon);
 
-function toggleUnits() {
+function toggleUnits(){
   useImperial = !useImperial;
   fetchWeather(lat, lon);
 }
 
-function codeToText(code) {
-  if (code === 0) return "Clear sky";
-  if (code <= 2) return "Mostly clear";
-  if (code === 3) return "Cloudy";
-  if (code <= 48) return "Foggy";
-  if (code <= 57) return "Drizzle";
-  if (code <= 65) return "Rain";
-  if (code <= 67) return "Freezing rain";
-  if (code <= 75) return "Snow";
-  if (code === 77) return "Snow grains";
-  if (code <= 82) return "Rain showers";
-  if (code <= 86) return "Snow showers";
-  if (code <= 99) return "Thunderstorm";
-  return "Unknown";
+function updateCurrent(data){
+  const w = data.hourly;
+
+  let t = w.temperature_2m[0];
+  let wind = w.wind_speed_10m[0];
+
+  if (useImperial){
+    wind = wind / 1.609;
+  }
+
+  currentCard.innerHTML = `
+    <h3>Current</h3>
+    <p>${Math.round(t)}° ${useImperial ? "F" : "C"}</p>
+    <p>Wind ${Math.round(wind)}</p>
+  `;
 }
 
-/* (UNCHANGED BELOW FUNCTIONS: updateCurrent, updateForecast, updateAnimation, search, etc.) */
+function updateForecast(data){
+  forecastGrid.innerHTML = "";
+
+  data.daily.time.forEach((d,i)=>{
+    const el = document.createElement("div");
+    el.className = "forecast-item";
+    el.innerHTML = `
+      <strong>${d}</strong>
+      <p>${Math.round(data.daily.temperature_2m_min[i])}–${Math.round(data.daily.temperature_2m_max[i])}</p>
+    `;
+    forecastGrid.appendChild(el);
+  });
+}
+
+function updateAnimation(){}
 
 </script>
 
