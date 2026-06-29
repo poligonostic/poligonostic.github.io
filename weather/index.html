@@ -20,14 +20,12 @@
     border-right: 2px solid #4ea3ff;
     padding: 30px 20px;
     height: 100vh;
-    box-sizing: border-box;
   }
 
   .sidebar h2 {
     font-family: 'Great Vibes', cursive;
     font-size: 38px;
     color: #4ea3ff;
-    margin-bottom: 20px;
   }
 
   .sidebar a {
@@ -68,7 +66,6 @@
   .weather-bg {
     position: absolute;
     inset: 0;
-    z-index: 1;
   }
 
   .blur-overlay {
@@ -76,12 +73,11 @@
     inset: 0;
     backdrop-filter: blur(4px);
     background: rgba(11,18,38,0.35);
-    z-index: 2;
   }
 
   .header-content {
     position: relative;
-    z-index: 3;
+    z-index: 2;
     padding: 20px 40px;
   }
 
@@ -177,7 +173,7 @@
 
   <div class="header-content">
     <h1 class="title">Poligonostic Weather</h1>
-    <div class="location-name" id="locationName"></div>
+    <div class="location-name" id="locationName">Loading...</div>
 
     <div class="header-row">
       <input id="searchInput" class="search-box" placeholder="Search city...">
@@ -190,7 +186,7 @@
 
 <div class="weather-body">
   <div class="cards-row">
-    <div class="card" id="currentCard">Loading...</div>
+    <div class="card" id="currentCard">Loading weather...</div>
     <div class="card">
       <div class="forecast-grid" id="forecastGrid"></div>
     </div>
@@ -212,60 +208,78 @@ document.getElementById("locationName").textContent =
 
 async function fetchWeather(lat, lon) {
   try {
-    const pRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
-    const pData = await pRes.json();
+    const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+    const pointData = await point.json();
 
-    const url = pData?.properties?.forecastHourly || pData?.properties?.forecast;
-    if (!url) throw new Error("No forecast URL");
+    const hourlyURL = pointData?.properties?.forecastHourly;
+    const dailyURL = pointData?.properties?.forecast;
 
-    const wRes = await fetch(url);
-    const wData = await wRes.json();
+    let res = null;
+    let isHourly = false;
 
-    const periods = wData?.properties?.periods || [];
+    if (hourlyURL) {
+      res = await fetch(hourlyURL);
+      let test = await res.json();
 
-    const hourly = {
+      if (test?.properties?.periods?.length) {
+        res = test;
+        isHourly = true;
+      } else {
+        res = null;
+      }
+    }
+
+    if (!res && dailyURL) {
+      const d = await fetch(dailyURL);
+      res = await d.json();
+      isHourly = false;
+    }
+
+    const periods = res?.properties?.periods || [];
+
+    if (!periods.length) {
+      throw new Error("No forecast data");
+    }
+
+    const data = {
       temp: [],
-      text: [],
-      time: []
+      text: []
     };
 
     periods.forEach(p => {
       let t = p.temperature;
 
-      // FIX: avoid unit issues
       if (p.temperatureUnit === "C") {
         t = t * 9/5 + 32;
       }
 
-      hourly.temp.push(t);
-      hourly.text.push(p.shortForecast || "Weather");
-      hourly.time.push(p.startTime);
+      data.temp.push(t);
+      data.text.push(p.shortForecast || "Weather");
     });
 
-    updateUI(hourly);
+    render(data, isHourly);
 
-  } catch (err) {
-    console.error(err);
-    document.getElementById("currentCard").textContent =
-      "Unable to load weather";
+  } catch (e) {
+    console.log(e);
+    document.getElementById("currentCard").innerHTML =
+      "<h3>Error</h3><p>Weather unavailable</p>";
   }
 }
 
-function updateUI(h) {
-  const current = h.temp[0];
-
+function render(data, isHourly) {
   document.getElementById("currentCard").innerHTML =
-    `<h3>Current</h3><p>${Math.round(current)}°</p>`;
+    `<h3>Current (${isHourly ? "Hourly" : "Daily"})</h3>
+     <p>${Math.round(data.temp[0])}°</p>`;
 
   const grid = document.getElementById("forecastGrid");
   grid.innerHTML = "";
 
-  for (let i = 0; i < Math.min(7, h.temp.length); i++) {
+  for (let i = 0; i < Math.min(7, data.temp.length); i++) {
     const div = document.createElement("div");
     div.className = "forecast-item";
     div.innerHTML = `
-      <b>${Math.round(h.temp[i])}°</b><br>
-      ${h.text[i]}
+      <b>${Math.round(data.temp[i])}°</b><br>
+      ${data.text[i]}
     `;
     grid.appendChild(div);
   }
@@ -276,9 +290,19 @@ function toggleUnits() {
   fetchWeather(lat, lon);
 }
 
-function searchLocation() {}
-function findMyLocation() {}
-function addFavorite() {}
+function searchLocation() {
+  const q = document.getElementById("searchInput").value;
+  if (!q) return alert("Type a city");
+  alert("Search not wired yet: " + q);
+}
+
+function findMyLocation() {
+  window.location.href = "/weather/map.html";
+}
+
+function addFavorite() {
+  alert("Saved locally");
+}
 
 fetchWeather(lat, lon);
 </script>
