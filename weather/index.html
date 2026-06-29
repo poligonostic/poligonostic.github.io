@@ -150,7 +150,87 @@
     padding: 10px;
     border-radius: 10px;
     border: 1px solid #2b3c6f;
+    text-align: center;
   }
+
+  .forecast-item img {
+    width: 50px;
+    height: 50px;
+  }
+
+  /* ANIMATIONS */
+
+  .sun {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle,#fff9a6,#ffd700,#ffae00);
+    top: 15%;
+    left: 15%;
+    animation: pulse 5s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  .cloud {
+    position: absolute;
+    width: 160px;
+    height: 60px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.8;
+    animation: drift 20s linear infinite;
+  }
+
+  @keyframes drift {
+    0% { transform: translateX(-200px); }
+    100% { transform: translateX(120vw); }
+  }
+
+  .raindrop {
+    position: absolute;
+    width: 2px;
+    height: 16px;
+    background: rgba(120,180,255,0.8);
+    animation: rain 0.7s linear infinite;
+  }
+
+  @keyframes rain {
+    0% { top: -20px; }
+    100% { top: 100%; }
+  }
+
+  .snowflake {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+    animation: snow 4s linear infinite;
+  }
+
+  @keyframes snow {
+    0% { top: -10px; }
+    100% { top: 100%; }
+  }
+
+  .flash {
+    position: absolute;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    animation: flash 3s infinite;
+  }
+
+  @keyframes flash {
+    0%,95%,100% { opacity: 0; }
+    20%,40% { opacity: 1; }
+  }
+
 </style>
 </head>
 
@@ -172,7 +252,7 @@
   <div class="blur-overlay"></div>
 
   <div class="header-content">
-    <h1 class="title">Poligonostic Weather</h1>
+    <div class="title">Poligonostic Weather</div>
     <div class="location-name" id="locationName">Loading...</div>
 
     <div class="header-row">
@@ -196,6 +276,7 @@
 </div>
 
 <script>
+
 let useImperial = false;
 
 const params = new URLSearchParams(location.search);
@@ -204,60 +285,20 @@ const lon = Number(params.get("lon"));
 const name = params.get("name");
 
 document.getElementById("locationName").textContent =
-  decodeURIComponent(name || "Unknown Location");
+  decodeURIComponent(name || "Unknown");
 
 async function fetchWeather(lat, lon) {
   try {
     const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
     const pointData = await point.json();
 
-    const hourlyURL = pointData?.properties?.forecastHourly;
-    const dailyURL = pointData?.properties?.forecast;
+    const url = pointData?.properties?.forecastHourly || pointData?.properties?.forecast;
 
-    let res = null;
-    let isHourly = false;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    if (hourlyURL) {
-      res = await fetch(hourlyURL);
-      let test = await res.json();
-
-      if (test?.properties?.periods?.length) {
-        res = test;
-        isHourly = true;
-      } else {
-        res = null;
-      }
-    }
-
-    if (!res && dailyURL) {
-      const d = await fetch(dailyURL);
-      res = await d.json();
-      isHourly = false;
-    }
-
-    const periods = res?.properties?.periods || [];
-
-    if (!periods.length) {
-      throw new Error("No forecast data");
-    }
-
-    const data = {
-      temp: [],
-      text: []
-    };
-
-    periods.forEach(p => {
-      let t = p.temperature;
-
-      if (p.temperatureUnit === "C") {
-        t = t * 9/5 + 32;
-      }
-
-      data.temp.push(t);
-      data.text.push(p.shortForecast || "Weather");
-    });
-
-    render(data, isHourly);
+    const periods = data?.properties?.periods || [];
+    render(periods);
 
   } catch (e) {
     console.log(e);
@@ -266,22 +307,82 @@ async function fetchWeather(lat, lon) {
   }
 }
 
-function render(data, isHourly) {
-  document.getElementById("currentCard").innerHTML =
-    `<h3>Current (${isHourly ? "Hourly" : "Daily"})</h3>
-     <p>${Math.round(data.temp[0])}°</p>`;
+function render(periods) {
+  const current = periods[0];
+
+  document.getElementById("currentCard").innerHTML = `
+    <h3>Current</h3>
+    <img src="${current.icon}">
+    <p><b>${current.shortForecast}</b></p>
+    <p>${current.temperature}°${current.temperatureUnit}</p>
+  `;
 
   const grid = document.getElementById("forecastGrid");
   grid.innerHTML = "";
 
-  for (let i = 0; i < Math.min(7, data.temp.length); i++) {
+  for (let i = 0; i < Math.min(7, periods.length); i++) {
+    const p = periods[i];
+
     const div = document.createElement("div");
     div.className = "forecast-item";
+
     div.innerHTML = `
-      <b>${Math.round(data.temp[i])}°</b><br>
-      ${data.text[i]}
+      <img src="${p.icon}">
+      <b>${p.name}</b><br>
+      ${p.shortForecast}<br>
+      ${p.temperature}°${p.temperatureUnit}
     `;
+
     grid.appendChild(div);
+  }
+
+  updateAnimation(current);
+}
+
+function updateAnimation(p) {
+  const bg = document.getElementById("weatherBg");
+  bg.innerHTML = "";
+
+  const t = (p.shortForecast || "").toLowerCase();
+
+  if (t.includes("sun") || t.includes("clear")) {
+    const s = document.createElement("div");
+    s.className = "sun";
+    bg.appendChild(s);
+  }
+
+  if (t.includes("cloud")) {
+    for (let i = 0; i < 4; i++) {
+      const c = document.createElement("div");
+      c.className = "cloud";
+      c.style.top = Math.random() * 40 + "%";
+      c.style.left = Math.random() * 100 + "%";
+      bg.appendChild(c);
+    }
+  }
+
+  if (t.includes("rain")) {
+    for (let i = 0; i < 120; i++) {
+      const r = document.createElement("div");
+      r.className = "raindrop";
+      r.style.left = Math.random() * 100 + "%";
+      bg.appendChild(r);
+    }
+  }
+
+  if (t.includes("snow")) {
+    for (let i = 0; i < 80; i++) {
+      const s = document.createElement("div");
+      s.className = "snowflake";
+      s.style.left = Math.random() * 100 + "%";
+      bg.appendChild(s);
+    }
+  }
+
+  if (t.includes("thunder")) {
+    const f = document.createElement("div");
+    f.className = "flash";
+    bg.appendChild(f);
   }
 }
 
@@ -305,6 +406,7 @@ function addFavorite() {
 }
 
 fetchWeather(lat, lon);
+
 </script>
 
 </body>
