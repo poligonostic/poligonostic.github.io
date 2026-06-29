@@ -1,4 +1,5 @@
-<html lang="en"><head>
+<html lang="en">
+<head>
 <meta charset="UTF-8">
 <title>Poligonostic Weather – Viewer</title>
 
@@ -26,7 +27,7 @@
     font-family: 'Great Vibes', cursive;
     font-size: 38px;
     color: #4ea3ff;
-    margin: 0 0 20px 0;
+    margin-bottom: 20px;
   }
 
   .sidebar a {
@@ -34,13 +35,7 @@
     color: #cfe3ff;
     text-decoration: none;
     padding: 12px 0;
-    font-size: 18px;
     border-bottom: 1px solid #1f2b4d;
-  }
-
-  .sidebar a:hover {
-    color: #4ea3ff;
-    padding-left: 6px;
   }
 
   .main {
@@ -54,6 +49,7 @@
     position: absolute;
     top: 20px;
     right: 30px;
+    z-index: 10;
     padding: 10px 18px;
     border-radius: 30px;
     border: 2px solid #4ea3ff;
@@ -65,8 +61,8 @@
   .weather-header {
     position: relative;
     height: 45vh;
-    overflow: hidden;
     background: #111b38;
+    overflow: hidden;
   }
 
   .weather-bg {
@@ -93,6 +89,7 @@
     font-family: 'Great Vibes', cursive;
     font-size: 60px;
     color: #4ea3ff;
+    margin: 0;
   }
 
   .location-name {
@@ -100,42 +97,63 @@
     color: #9ccaff;
   }
 
+  .header-row {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 1;
+    padding: 12px;
+    border-radius: 30px;
+    border: 2px solid #4ea3ff;
+    background: #0f1a33;
+    color: white;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    border-radius: 20px;
+    border: 2px solid #4ea3ff;
+    background: #0f1a33;
+    color: white;
+    cursor: pointer;
+  }
+
+  .weather-body {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+  }
+
   .cards-row {
     display: flex;
-    gap: 25px;
+    gap: 20px;
     flex-wrap: wrap;
-    padding: 40px;
   }
 
   .card {
-    background: rgba(17,27,56,0.9);
-    border: 2px solid #4ea3ff;
-    border-radius: 16px;
-    padding: 25px;
     flex: 1;
     min-width: 280px;
+    background: rgba(17,27,56,0.9);
+    border: 2px solid #4ea3ff;
+    padding: 20px;
+    border-radius: 14px;
   }
 
   .forecast-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill,minmax(160px,1fr));
+    gap: 10px;
   }
 
   .forecast-item {
     background: #111b38;
-    border-radius: 12px;
-    padding: 12px;
+    padding: 10px;
+    border-radius: 10px;
     border: 1px solid #2b3c6f;
-  }
-
-  .sun { width:160px;height:160px;border-radius:50%;
-    background: radial-gradient(circle,#fff9a6,#ffd700,#ffae00);
-    position:absolute;top:10%;left:10%;
-  }
-
-  .cloud, .raindrop, .snowflake, .flash {
-    position:absolute;
   }
 </style>
 </head>
@@ -145,7 +163,8 @@
 <div class="sidebar">
   <h2>Poligonostic</h2>
   <a href="/">Home</a>
-  <a href="/weather/">Weather Viewer</a>
+  <a href="/weather/">Weather</a>
+  <a href="/radar/">Radar</a>
 </div>
 
 <div class="main">
@@ -157,15 +176,24 @@
   <div class="blur-overlay"></div>
 
   <div class="header-content">
-    <div class="title">Poligonostic Weather</div>
-    <div class="location-name" id="locationName">Loading...</div>
+    <h1 class="title">Poligonostic Weather</h1>
+    <div class="location-name" id="locationName"></div>
+
+    <div class="header-row">
+      <input id="searchInput" class="search-box" placeholder="Search city...">
+      <button class="btn" onclick="searchLocation()">Search</button>
+      <button class="btn" onclick="findMyLocation()">My Location</button>
+      <button class="btn" onclick="addFavorite()">⭐</button>
+    </div>
   </div>
 </div>
 
-<div class="cards-row">
-  <div class="card" id="currentCard">Loading...</div>
-  <div class="card">
-    <div class="forecast-grid" id="forecastGrid"></div>
+<div class="weather-body">
+  <div class="cards-row">
+    <div class="card" id="currentCard">Loading...</div>
+    <div class="card">
+      <div class="forecast-grid" id="forecastGrid"></div>
+    </div>
   </div>
 </div>
 
@@ -174,131 +202,86 @@
 <script>
 let useImperial = false;
 
-const params = new URLSearchParams(window.location.search);
+const params = new URLSearchParams(location.search);
 const lat = Number(params.get("lat"));
 const lon = Number(params.get("lon"));
 const name = params.get("name");
 
-const locationNameEl = document.getElementById("locationName");
-const currentCard = document.getElementById("currentCard");
-const forecastGrid = document.getElementById("forecastGrid");
-const weatherBg = document.getElementById("weatherBg");
-
-locationNameEl.textContent = decodeURIComponent(name || "Unknown");
+document.getElementById("locationName").textContent =
+  decodeURIComponent(name || "Unknown Location");
 
 async function fetchWeather(lat, lon) {
   try {
-    const pointRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
-    const pointData = await pointRes.json();
+    const pRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+    const pData = await pRes.json();
 
-    const hourlyUrl =
-      pointData?.properties?.forecastHourly ||
-      pointData?.properties?.forecast;
+    const url = pData?.properties?.forecastHourly || pData?.properties?.forecast;
+    if (!url) throw new Error("No forecast URL");
 
-    if (!hourlyUrl) throw new Error("No forecast endpoint");
+    const wRes = await fetch(url);
+    const wData = await wRes.json();
 
-    const res = await fetch(hourlyUrl);
-    const data = await res.json();
+    const periods = wData?.properties?.periods || [];
 
-    const periods = data.properties?.periods || [];
-
-    const toCode = t => {
-      t = (t || "").toLowerCase();
-      if (t.includes("thunder")) return 95;
-      if (t.includes("snow")) return 73;
-      if (t.includes("rain")) return 61;
-      if (t.includes("cloud")) return 3;
-      if (t.includes("clear")) return 0;
-      return 1;
-    };
-
-    let hourly = {
-      weathercode: [],
-      temperature_2m: [],
-      wind_speed_10m: [],
-      wind_direction_10m: [],
+    const hourly = {
+      temp: [],
+      text: [],
       time: []
     };
 
-    let daily = { time:[], weathercode:[], temperature_2m_min:[], temperature_2m_max:[], wind_speed_10m_max:[] };
-    let map = {};
-
     periods.forEach(p => {
-      let temp = p.temperature;
-      if (p.temperatureUnit === "C") temp = temp * 9/5 + 32;
+      let t = p.temperature;
 
-      hourly.weathercode.push(toCode(p.shortForecast));
-      hourly.temperature_2m.push(temp);
-      hourly.wind_speed_10m.push(parseFloat(p.windSpeed) || 0);
-      hourly.wind_direction_10m.push(0);
+      // FIX: avoid unit issues
+      if (p.temperatureUnit === "C") {
+        t = t * 9/5 + 32;
+      }
+
+      hourly.temp.push(t);
+      hourly.text.push(p.shortForecast || "Weather");
       hourly.time.push(p.startTime);
-
-      const d = p.startTime.split("T")[0];
-      if (!map[d]) map[d] = {min:999,max:-999,code:toCode(p.shortForecast),wind:0};
-
-      map[d].min = Math.min(map[d].min, temp);
-      map[d].max = Math.max(map[d].max, temp);
-      map[d].wind = Math.max(map[d].wind, parseFloat(p.windSpeed) || 0);
     });
 
-    Object.keys(map).slice(0,7).forEach(d=>{
-      daily.time.push(d);
-      daily.weathercode.push(map[d].code);
-      daily.temperature_2m_min.push(map[d].min);
-      daily.temperature_2m_max.push(map[d].max);
-      daily.wind_speed_10m_max.push(map[d].wind);
-    });
+    updateUI(hourly);
 
-    updateCurrent({hourly});
-    updateForecast({daily});
-    updateAnimation({hourly});
-
-  } catch (e) {
-    console.error(e);
-    currentCard.textContent = "Unable to load weather";
+  } catch (err) {
+    console.error(err);
+    document.getElementById("currentCard").textContent =
+      "Unable to load weather";
   }
 }
 
-fetchWeather(lat, lon);
+function updateUI(h) {
+  const current = h.temp[0];
 
-function toggleUnits(){
+  document.getElementById("currentCard").innerHTML =
+    `<h3>Current</h3><p>${Math.round(current)}°</p>`;
+
+  const grid = document.getElementById("forecastGrid");
+  grid.innerHTML = "";
+
+  for (let i = 0; i < Math.min(7, h.temp.length); i++) {
+    const div = document.createElement("div");
+    div.className = "forecast-item";
+    div.innerHTML = `
+      <b>${Math.round(h.temp[i])}°</b><br>
+      ${h.text[i]}
+    `;
+    grid.appendChild(div);
+  }
+}
+
+function toggleUnits() {
   useImperial = !useImperial;
   fetchWeather(lat, lon);
 }
 
-function updateCurrent(data){
-  const w = data.hourly;
+function searchLocation() {}
+function findMyLocation() {}
+function addFavorite() {}
 
-  let t = w.temperature_2m[0];
-  let wind = w.wind_speed_10m[0];
-
-  if (useImperial){
-    wind = wind / 1.609;
-  }
-
-  currentCard.innerHTML = `
-    <h3>Current</h3>
-    <p>${Math.round(t)}° ${useImperial ? "F" : "C"}</p>
-    <p>Wind ${Math.round(wind)}</p>
-  `;
-}
-
-function updateForecast(data){
-  forecastGrid.innerHTML = "";
-
-  data.daily.time.forEach((d,i)=>{
-    const el = document.createElement("div");
-    el.className = "forecast-item";
-    el.innerHTML = `
-      <strong>${d}</strong>
-      <p>${Math.round(data.daily.temperature_2m_min[i])}–${Math.round(data.daily.temperature_2m_max[i])}</p>
-    `;
-    forecastGrid.appendChild(el);
-  });
-}
-
-function updateAnimation(){}
-
+fetchWeather(lat, lon);
 </script>
 
-</body></html>
+</body>
+</html>
