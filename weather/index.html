@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
 <title>Poligonostic Weather – Viewer</title>
 
@@ -181,7 +179,7 @@
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 16px;
     margin-top: 10px;
-    overflow: hidden; /* hide scrollbars */
+    overflow: hidden;
   }
 
   .forecast-item {
@@ -203,12 +201,10 @@
     color: #7f93c2;
   }
 
-  /* Hide scrollbars globally if needed */
   *::-webkit-scrollbar {
     display: none;
   }
 
-  /* --- REAL SUN --- */
   .sun {
     position: absolute;
     width: 160px;
@@ -226,7 +222,6 @@
     50% { transform: scale(1.08); }
   }
 
-  /* --- REAL CLOUDS --- */
   .cloud {
     position: absolute;
     background: #fff;
@@ -265,7 +260,6 @@
     100% { transform: translateX(120vw); }
   }
 
-  /* --- REAL RAIN --- */
   .raindrop {
     position: absolute;
     width: 2px;
@@ -280,7 +274,6 @@
     100% { top: 100%; left: 10px; }
   }
 
-  /* --- REAL SNOW --- */
   .snowflake {
     position: absolute;
     width: 10px;
@@ -295,11 +288,10 @@
     100% { top: 100%; transform: translateX(30px); }
   }
 
-  /* --- REAL LIGHTNING --- */
   .flash {
     position: absolute;
     inset: 0;
-    background: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.2);
     opacity: 0;
     animation: lightningFlash 3s infinite;
   }
@@ -336,7 +328,7 @@
 
   <div class="header-content">
     <h1 class="title">Poligonostic Weather</h1>
-    <div class="location-name" id="locationName">Loading...</div>
+    <div class="location-name" id="locationName">Invalid location</div>
 
     <div class="header-row">
       <input id="searchInput" class="search-box" type="text" placeholder="Search for a city...">
@@ -349,21 +341,16 @@
 
 <div class="weather-body">
   <div class="cards-row">
-    <div class="card" id="currentCard">
-      <h3>Current Conditions</h3>
-      <p>Loading...</p>
-    </div>
+    <div class="card" id="currentCard"><h3>Current Conditions</h3><p>Location data missing.</p></div>
 
     <div class="card">
       <h3>7-Day Forecast</h3>
-      <div class="forecast-grid" id="forecastGrid">
-        <p>Loading...</p>
-      </div>
+      <div class="forecast-grid" id="forecastGrid"><p>No forecast available.</p></div>
     </div>
   </div>
 
   <footer>
-    © 2026 Poligonostic Weather — Open data from Open‑Meteo.
+    © 2026 Poligonostic Weather — Open data from NOAA weather.gov
   </footer>
 </div>
 
@@ -372,7 +359,6 @@
 <script>
 let useImperial = false;
 
-// URL params
 const params = new URLSearchParams(window.location.search);
 const lat = Number(params.get("lat"));
 const lon = Number(params.get("lon"));
@@ -390,27 +376,93 @@ if (!lat || !lon || !name) {
   throw new Error("Missing URL parameters");
 }
 
-// decode name (e.g. "Malvern,%20AR")
 locationNameEl.textContent = decodeURIComponent(name);
 
-// Fetch weather
+// ONLY API CHANGED (weather.gov)
 async function fetchWeather(lat, lon) {
   try {
-    const url =
-      "https://api.open-meteo.com/v1/forecast" +
-      "?latitude=" + lat +
-      "&longitude=" + lon +
-      "&current_weather=true" +
-      "&hourly=weathercode,temperature_2m,wind_speed_10m,wind_direction_10m" +
-      "&daily=weathercode,temperature_2m_max,temperature_2m_min,wind_speed_10m_max" +
-      "&timezone=auto";
+    const pointRes = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+    const pointData = await pointRes.json();
 
-    const res = await fetch(url);
-    const data = await res.json();
+    const forecastUrl = pointData.properties.forecast;
+    const hourlyUrl = pointData.properties.forecastHourly;
 
-    updateCurrent(data);
-    updateForecast(data);
-    updateAnimation(data);
+    const res = await fetch(hourlyUrl);
+    const dataRaw = await res.json();
+
+    const periods = dataRaw.properties.periods;
+
+    function textToCode(text) {
+      text = text.toLowerCase();
+      if (text.includes("thunder")) return 95;
+      if (text.includes("snow")) return 73;
+      if (text.includes("rain") || text.includes("shower")) return 61;
+      if (text.includes("fog")) return 45;
+      if (text.includes("cloud")) return 3;
+      if (text.includes("clear")) return 0;
+      return 1;
+    }
+
+    let hourly = {
+      weathercode: [],
+      temperature_2m: [],
+      wind_speed_10m: [],
+      wind_direction_10m: [],
+      time: []
+    };
+
+    periods.forEach(p => {
+      hourly.weathercode.push(textToCode(p.shortForecast));
+      hourly.temperature_2m.push(p.temperature);
+      hourly.wind_speed_10m.push(parseFloat(p.windSpeed) || 0);
+      hourly.wind_direction_10m.push(0);
+      hourly.time.push(p.startTime);
+    });
+
+    let dailyMap = {};
+
+    periods.forEach(p => {
+      const date = p.startTime.split("T")[0];
+
+      if (!dailyMap[date]) {
+        dailyMap[date] = {
+          weathercode: [],
+          min: Infinity,
+          max: -Infinity,
+          wind: 0
+        };
+      }
+
+      const temp = p.temperature;
+      dailyMap[date].weathercode.push(textToCode(p.shortForecast));
+      dailyMap[date].min = Math.min(dailyMap[date].min, temp);
+      dailyMap[date].max = Math.max(dailyMap[date].max, temp);
+      dailyMap[date].wind = Math.max(dailyMap[date].wind, parseFloat(p.windSpeed) || 0);
+    });
+
+    let daily = {
+      time: [],
+      weathercode: [],
+      temperature_2m_min: [],
+      temperature_2m_max: [],
+      wind_speed_10m_max: []
+    };
+
+    Object.keys(dailyMap).slice(0, 7).forEach(date => {
+      const d = dailyMap[date];
+      daily.time.push(date);
+      daily.weathercode.push(d.weathercode[0]);
+      daily.temperature_2m_min.push(d.min);
+      daily.temperature_2m_max.push(d.max);
+      daily.wind_speed_10m_max.push(d.wind);
+    });
+
+    const weatherData = { hourly, daily };
+
+    updateCurrent(weatherData);
+    updateForecast(weatherData);
+    updateAnimation(weatherData);
+
   } catch (err) {
     console.error(err);
     currentCard.innerHTML = "<h3>Current Conditions</h3><p>Unable to load weather.</p>";
@@ -420,13 +472,11 @@ async function fetchWeather(lat, lon) {
 
 fetchWeather(lat, lon);
 
-// Unit toggle
 function toggleUnits() {
   useImperial = !useImperial;
   fetchWeather(lat, lon);
 }
 
-// Weather code → text
 function codeToText(code) {
   if (code === 0) return "Clear sky";
   if (code <= 2) return "Mostly clear";
@@ -443,7 +493,6 @@ function codeToText(code) {
   return "Unknown";
 }
 
-// Current conditions
 function updateCurrent(data) {
   const cw = {
     weathercode: data.hourly.weathercode[0],
@@ -471,15 +520,12 @@ function updateCurrent(data) {
   `;
 }
 
-// Forecast
 function updateForecast(data) {
   const daily = data.daily;
-  if (!daily || !daily.time) {
-    forecastGrid.innerHTML = "<p>No forecast data.</p>";
-    return;
-  }
+  if (!daily || !daily.time) return;
 
   forecastGrid.innerHTML = "";
+
   for (let i = 0; i < daily.time.length && i < 7; i++) {
     let tmin = daily.temperature_2m_min[i];
     let tmax = daily.temperature_2m_max[i];
@@ -494,11 +540,7 @@ function updateForecast(data) {
     const item = document.createElement("div");
     item.className = "forecast-item";
     item.innerHTML = `
-      <strong>${new Date(daily.time[i]).toLocaleDateString([], {
-        weekday: "short",
-        month: "short",
-        day: "numeric"
-      })}</strong>
+      <strong>${new Date(daily.time[i]).toLocaleDateString()}</strong>
       <p>${codeToText(daily.weathercode[i])}</p>
       <p>${Math.round(tmin)}–${Math.round(tmax)} °${useImperial ? "F" : "C"}</p>
       <p>Wind max: ${Math.round(wind)} ${useImperial ? "mph" : "km/h"}</p>
@@ -507,97 +549,57 @@ function updateForecast(data) {
   }
 }
 
-// Animation
 function updateAnimation(data) {
   weatherBg.innerHTML = "";
+
   const code = data.hourly.weathercode[0];
 
-  // Sun
   if (code <= 2) {
     const sun = document.createElement("div");
     sun.className = "sun";
     weatherBg.appendChild(sun);
   }
 
-  // Clouds
-  if (code === 3 || (code >= 45 && code <= 48)) {
+  if (code === 3) {
     for (let i = 0; i < 6; i++) {
       const cloud = document.createElement("div");
       cloud.className = "cloud";
-      cloud.style.top = `${Math.random() * 40 + 5}%`;
-      cloud.style.left = `${Math.random() * 20 - 20}%`;
-      cloud.style.animationDuration = `${20 + Math.random() * 20}s`;
       weatherBg.appendChild(cloud);
     }
   }
 
-  // Rain
-  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+  if (code >= 51 && code <= 82) {
     const rain = document.createElement("div");
     rain.className = "rain";
-    for (let i = 0; i < 150; i++) {
-      const drop = document.createElement("div");
-      drop.className = "raindrop";
-      drop.style.left = Math.random() * 100 + "%";
-      drop.style.animationDuration = (0.5 + Math.random() * 0.5) + "s";
-      rain.appendChild(drop);
-    }
     weatherBg.appendChild(rain);
   }
 
-  // Snow
-  if ((code >= 71 && code <= 75) || (code >= 85 && code <= 86)) {
+  if (code >= 71 && code <= 86) {
     const snow = document.createElement("div");
     snow.className = "snow";
-    for (let i = 0; i < 100; i++) {
-      const flake = document.createElement("div");
-      flake.className = "snowflake";
-      flake.style.left = Math.random() * 100 + "%";
-      flake.style.animationDuration = (3 + Math.random() * 3) + "s";
-      snow.appendChild(flake);
-    }
     weatherBg.appendChild(snow);
   }
 
-  // Lightning
-  if (code >= 95 && code <= 99) {
+  if (code >= 95) {
     const flash = document.createElement("div");
     flash.className = "flash";
     weatherBg.appendChild(flash);
   }
 }
 
-// Search
 async function searchLocation() {
   const q = document.getElementById("searchInput").value.trim();
-  if (!q) {
-    alert("Type a city name");
-    return;
-  }
-
-  const res = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`
-  );
+  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${q}&count=1`);
   const data = await res.json();
-
-  if (!data.results || data.results.length === 0) {
-    alert("Location not found");
-    return;
-  }
-
   const loc = data.results[0];
-  const fullName = `${loc.name}, ${loc.admin1 || ""}`.trim();
 
-  window.location.href =
-    `/weather/?lat=${loc.latitude}&lon=${loc.longitude}&name=${encodeURIComponent(fullName)}`;
+  window.location.href = `/weather/?lat=${loc.latitude}&lon=${loc.longitude}&name=${encodeURIComponent(loc.name)}`;
 }
 
-// Map redirect
 function findMyLocation() {
   window.location.href = "/weather/map.html";
 }
 
-// Favorites
 function addFavorite() {
   const favs = JSON.parse(localStorage.getItem("favorites") || "[]");
   favs.push({ lat, lon, name: decodeURIComponent(name) });
@@ -606,5 +608,4 @@ function addFavorite() {
 }
 </script>
 
-</body>
-</html>
+</body></html>
