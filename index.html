@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,219 +8,206 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="style.css">
+<style>
+    body {
+        margin: 0;
+        background: #0b1226;
+        color: #e6ecff;
+        font-family: 'Inter', sans-serif;
+    }
+
+    #app {
+        padding: 20px;
+        max-width: 1400px;
+        margin: auto;
+    }
+
+    h2 {
+        margin: 0 0 10px 0;
+        font-size: 22px;
+        color: #4ea3ff;
+    }
+
+    .big-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .big-card {
+        background: #111b38;
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #4ea3ff;
+    }
+
+    .grid-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .grid-card {
+        background: #111b38;
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #2b3c6f;
+    }
+
+    img {
+        width: 60px;
+    }
+</style>
 </head>
 
 <body>
 
+<div id="app">
+
+    <!-- ========================= ROW 1 ========================= -->
+    <div class="big-row">
+        <div class="big-card" id="currentCard"><h2>Current</h2>Loading...</div>
+        <div class="big-card" id="hourlyCard"><h2>Hourly</h2>Loading...</div>
+        <div class="big-card" id="dailyCard"><h2>Daily</h2>Loading...</div>
+    </div>
+
+    <!-- ========================= ROW 2 ========================= -->
+    <div class="grid-row">
+        <div class="grid-card" id="windCard"><h2>Wind</h2>Loading...</div>
+        <div class="grid-card" id="humidityCard"><h2>Humidity</h2>Loading...</div>
+        <div class="grid-card" id="pressureCard"><h2>Pressure</h2>Loading...</div>
+        <div class="grid-card" id="visibilityCard"><h2>Visibility</h2>Loading...</div>
+
+        <div class="grid-card" id="cloudCard"><h2>Cloud Cover</h2>Loading...</div>
+        <div class="grid-card" id="heatIndexCard"><h2>Heat Index</h2>Loading...</div>
+        <div class="grid-card" id="radarCard"><h2>Radar</h2>Loading...</div>
+        <div class="grid-card" id="satelliteCard"><h2>Satellite</h2>Loading...</div>
+    </div>
+
+</div>
+
 <script>
-// =====================================================
-// COORDINATE CHECK — REQUIRED FOR ALL FUTURE JS MODULES
-// =====================================================
-const params = new URLSearchParams(location.search);
-const lat = params.get("lat");
-const lon = params.get("lon");
+async function loadWeather() {
+    const params = new URLSearchParams(location.search);
+    const lat = params.get("lat");
+    const lon = params.get("lon");
 
-if (!lat || !lon) {
-    document.body.innerHTML = `
-        <div style="color:white;padding:20px;">
-            <h1>Error</h1>
-            <p>Missing coordinates in URL</p>
-            <p>Example:</p>
-            <code>?lat=34.7465&lon=-92.2896</code>
-        </div>
+    if (!lat || !lon) {
+        document.body.innerHTML = "<h1 style='color:white;padding:20px;'>Missing coordinates</h1>";
+        return;
+    }
+
+    // Get NOAA gridpoint
+    const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+    const pointData = await point.json();
+
+    const forecastURL = pointData.properties.forecast;
+    const hourlyURL = pointData.properties.forecastHourly;
+
+    // Fetch daily forecast
+    const dailyReq = await fetch(forecastURL);
+    const dailyData = await dailyReq.json();
+    const daily = dailyData.properties.periods;
+
+    // Fetch hourly forecast
+    const hourlyReq = await fetch(hourlyURL);
+    const hourlyData = await hourlyReq.json();
+    const hourly = hourlyData.properties.periods;
+
+    // ========================= CURRENT =========================
+    const c = daily[0];
+    document.getElementById("currentCard").innerHTML = `
+        <h2>Current</h2>
+        <img src="${c.icon}">
+        <h1>${c.temperature}°${c.temperatureUnit}</h1>
+        <p>${c.shortForecast}</p>
     `;
-} else {
-    window.POLI_LAT = Number(lat);
-    window.POLI_LON = Number(lon);
+
+    // ========================= HOURLY =========================
+    let hourlyHTML = "<h2>Hourly</h2>";
+    for (let i = 0; i < 6; i++) {
+        const h = hourly[i];
+        hourlyHTML += `
+            <div style="margin-bottom:10px;">
+                <b>${h.startTime.slice(11,16)}</b><br>
+                ${h.temperature}°${h.temperatureUnit} - ${h.shortForecast}
+            </div>
+        `;
+    }
+    document.getElementById("hourlyCard").innerHTML = hourlyHTML;
+
+    // ========================= DAILY =========================
+    let dailyHTML = "<h2>Daily</h2>";
+    for (let i = 0; i < 6; i++) {
+        const d = daily[i];
+        dailyHTML += `
+            <div style="margin-bottom:10px;">
+                <b>${d.name}</b><br>
+                ${d.shortForecast}<br>
+                ${d.temperature}°${d.temperatureUnit}
+            </div>
+        `;
+    }
+    document.getElementById("dailyCard").innerHTML = dailyHTML;
+
+    // ========================= WIND =========================
+    document.getElementById("windCard").innerHTML = `
+        <h2>Wind</h2>
+        <p>${c.windSpeed}</p>
+        <p>${c.windDirection}</p>
+    `;
+
+    // ========================= HUMIDITY =========================
+    const humidity = hourly[0].relativeHumidity?.value ?? "N/A";
+    document.getElementById("humidityCard").innerHTML = `
+        <h2>Humidity</h2>
+        <p>${humidity}%</p>
+    `;
+
+    // ========================= PRESSURE =========================
+    const pressure = hourly[0].pressure?.value ?? "N/A";
+    document.getElementById("pressureCard").innerHTML = `
+        <h2>Pressure</h2>
+        <p>${pressure} mb</p>
+    `;
+
+    // ========================= VISIBILITY =========================
+    const visibility = hourly[0].visibility?.value ?? "N/A";
+    document.getElementById("visibilityCard").innerHTML = `
+        <h2>Visibility</h2>
+        <p>${visibility} meters</p>
+    `;
+
+    // ========================= CLOUD COVER =========================
+    const cloud = hourly[0].cloudCover?.value ?? "N/A";
+    document.getElementById("cloudCard").innerHTML = `
+        <h2>Cloud Cover</h2>
+        <p>${cloud}%</p>
+    `;
+
+    // ========================= HEAT INDEX =========================
+    const heatIndex = hourly[0].heatIndex?.value ?? "N/A";
+    document.getElementById("heatIndexCard").innerHTML = `
+        <h2>Heat Index</h2>
+        <p>${heatIndex}°</p>
+    `;
+
+    // ========================= RADAR =========================
+    document.getElementById("radarCard").innerHTML = `
+        <h2>Radar</h2>
+        <img src="https://radar.weather.gov/ridge/standard/${pointData.properties.gridId}_0.gif" width="100%">
+    `;
+
+    // ========================= SATELLITE =========================
+    document.getElementById("satelliteCard").innerHTML = `
+        <h2>Satellite</h2>
+        <img src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/GOES16-ABI-FD-GEOCOLOR-1808x1808.jpg" width="100%">
+    `;
 }
+
+loadWeather();
 </script>
-
-<!-- ========================= LOADING ========================= -->
-<div id="loadingScreen">Loading...</div>
-
-<!-- ========================= SIDEBAR ========================= -->
-<aside id="sidebar">
-    <div id="logo">Loading...</div>
-    <nav id="nav">Loading...</nav>
-</aside>
-
-<!-- ========================= MAIN ========================= -->
-<main id="app">
-
-    <!-- ========================= HEADER ========================= -->
-    <header id="header">
-
-        <div id="weatherBackground"></div>
-        <div id="overlay"></div>
-
-        <div id="headerTop">
-            <div id="title">Loading...</div>
-            <div id="location">Loading...</div>
-            <div id="lastUpdated">Loading...</div>
-        </div>
-
-        <div id="searchBar">Loading...</div>
-        <div id="headerButtons">Loading...</div>
-
-    </header>
-
-    <!-- ========================= USER BAR ========================= -->
-    <section id="userBar">
-        <div id="favorites">Loading...</div>
-        <div id="recentLocations">Loading...</div>
-    </section>
-
-    <!-- ========================= ALERTS ========================= -->
-    <section id="alerts">Loading...</section>
-
-    <!-- ========================= DASHBOARD WRAPPER ========================= -->
-    <section id="dashboard">
-
-        <!-- ===== CURRENT WEATHER ===== -->
-        <section id="currentSection">
-            <article id="currentCard">Loading...</article>
-            <article id="summaryCard">Loading...</article>
-        </section>
-
-        <!-- ===== PRECIPITATION ===== -->
-        <section id="precipSection">
-            <article id="rainCard">Loading...</article>
-            <article id="snowCard">Loading...</article>
-            <article id="iceCard">Loading...</article>
-            <article id="thunderCard">Loading...</article>
-        </section>
-
-        <!-- ===== WIND ===== -->
-        <section id="windSection">
-            <article id="windCard">Loading...</article>
-            <article id="gustCard">Loading...</article>
-            <article id="windChillCard">Loading...</article>
-        </section>
-
-        <!-- ===== ATMOSPHERE ===== -->
-        <section id="atmosphereSection">
-            <article id="humidityCard">Loading...</article>
-            <article id="dewPointCard">Loading...</article>
-            <article id="pressureCard">Loading...</article>
-            <article id="visibilityCard">Loading...</article>
-            <article id="cloudCoverCard">Loading...</article>
-            <article id="heatIndexCard">Loading...</article>
-        </section>
-
-        <!-- ===== FORECASTS ===== -->
-        <section id="forecastSection">
-            <article id="hourlyForecast">Loading...</article>
-            <article id="dailyForecast">Loading...</article>
-            <article id="extendedForecast">Loading...</article>
-            <article id="discussionForecast">Loading...</article>
-        </section>
-
-        <!-- ===== MAPS / RADAR ===== -->
-        <section id="mapsSection">
-            <article id="radarCard">Loading...</article>
-            <article id="satelliteCard">Loading...</article>
-            <article id="lightningMapCard">Loading...</article>
-            <article id="windMapCard">Loading...</article>
-            <article id="tempMapCard">Loading...</article>
-            <article id="precipMapCard">Loading...</article>
-        </section>
-
-        <!-- ===== GRAPHS ===== -->
-        <section id="graphsSection">
-            <article id="tempGraph">Loading...</article>
-            <article id="rainGraph">Loading...</article>
-            <article id="windGraph">Loading...</article>
-            <article id="pressureGraph">Loading...</article>
-            <article id="humidityGraph">Loading...</article>
-            <article id="uvGraph">Loading...</article>
-        </section>
-
-        <!-- ===== ASTRONOMY ===== -->
-        <section id="astronomySection">
-            <article id="sunCard">Loading...</article>
-            <article id="moonCard">Loading...</article>
-            <article id="twilightCard">Loading...</article>
-        </section>
-
-        <!-- ===== ENVIRONMENT ===== -->
-        <section id="environmentSection">
-            <article id="airQualityCard">Loading...</article>
-            <article id="pollenCard">Loading...</article>
-            <article id="fireWeatherCard">Loading...</article>
-            <article id="riverLevelsCard">Loading...</article>
-            <article id="droughtCard">Loading...</article>
-        </section>
-
-        <!-- ===== SPACE WEATHER ===== -->
-        <section id="spaceSection">
-            <article id="auroraCard">Loading...</article>
-            <article id="solarCard">Loading...</article>
-            <article id="geomagneticCard">Loading...</article>
-        </section>
-
-        <!-- ===== CLIMATE ===== -->
-        <section id="climateSection">
-            <article id="recordsCard">Loading...</article>
-            <article id="normalsCard">Loading...</article>
-            <article id="historyCard">Loading...</article>
-        </section>
-
-        <!-- ===== OBSERVATION ===== -->
-        <section id="observationSection">
-            <article id="stationCard">Loading...</article>
-            <article id="metarCard">Loading...</article>
-        </section>
-
-        <!-- ===== EXTRAS ===== -->
-        <section id="extrasSection">
-            <article id="cameraCard">Loading...</article>
-            <article id="stormReportsCard">Loading...</article>
-            <article id="developerCard">Loading...</article>
-        </section>
-
-    </section>
-
-    <footer id="footer">Loading...</footer>
-
-</main>
-
-<!-- ========================= MODALS ========================= -->
-<div id="searchModal">Loading...</div>
-<div id="settingsModal">Loading...</div>
-<div id="favoritesModal">Loading...</div>
-<div id="aboutModal">Loading...</div>
-
-<!-- ========================= CANVAS LAYERS ========================= -->
-<canvas id="backgroundCanvas"></canvas>
-<canvas id="radarCanvas"></canvas>
-<canvas id="graphCanvas"></canvas>
-
-<!-- ========================= APP SCRIPTS ========================= -->
-<script type="module" src="app.js"></script>
-
-<script type="module" src="scripts/weather-api.js"></script>
-<script type="module" src="scripts/alerts.js"></script>
-<script type="module" src="scripts/radar.js"></script>
-<script type="module" src="scripts/astronomy.js"></script>
-
-<script type="module" src="scripts/current.js"></script>
-<script type="module" src="scripts/forecast.js"></script>
-<script type="module" src="scripts/maps.js"></script>
-<script type="module" src="scripts/graphs.js"></script>
-
-<script type="module" src="scripts/environment.js"></script>
-<script type="module" src="scripts/space.js"></script>
-<script type="module" src="scripts/climate.js"></script>
-
-<script type="module" src="scripts/observation.js"></script>
-<script type="module" src="scripts/extras.js"></script>
-
-<script type="module" src="scripts/search.js"></script>
-<script type="module" src="scripts/favorites.js"></script>
-<script type="module" src="scripts/settings.js"></script>
-
-<script type="module" src="scripts/utils.js"></script>
 
 </body>
 </html>
