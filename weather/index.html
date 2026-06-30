@@ -1,413 +1,229 @@
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
-<title>Poligonostic Weather – Viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<title>Poligonostic Weather</title>
 
-<style>
-  body {
-    margin: 0;
-    background: #0b1226;
-    color: #e6ecff;
-    font-family: 'Inter', sans-serif;
-    display: flex;
-  }
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  .sidebar {
-    width: 260px;
-    background: #0f1a33;
-    border-right: 2px solid #4ea3ff;
-    padding: 30px 20px;
-    height: 100vh;
-  }
-
-  .sidebar h2 {
-    font-family: 'Great Vibes', cursive;
-    font-size: 38px;
-    color: #4ea3ff;
-  }
-
-  .sidebar a {
-    display: block;
-    color: #cfe3ff;
-    text-decoration: none;
-    padding: 12px 0;
-    border-bottom: 1px solid #1f2b4d;
-  }
-
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-  }
-
-  .unit-toggle {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    z-index: 10;
-    padding: 10px 18px;
-    border-radius: 30px;
-    border: 2px solid #4ea3ff;
-    background: #0f1a33;
-    color: #e6ecff;
-    cursor: pointer;
-  }
-
-  .weather-header {
-    position: relative;
-    height: 45vh;
-    background: #111b38;
-    overflow: hidden;
-  }
-
-  .weather-bg {
-    position: absolute;
-    inset: 0;
-  }
-
-  .blur-overlay {
-    position: absolute;
-    inset: 0;
-    backdrop-filter: blur(4px);
-    background: rgba(11,18,38,0.35);
-  }
-
-  .header-content {
-    position: relative;
-    z-index: 2;
-    padding: 20px 40px;
-  }
-
-  .title {
-    font-family: 'Great Vibes', cursive;
-    font-size: 60px;
-    color: #4ea3ff;
-    margin: 0;
-  }
-
-  .location-name {
-    font-size: 26px;
-    color: #9ccaff;
-  }
-
-  .header-row {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .search-box {
-    flex: 1;
-    padding: 12px;
-    border-radius: 30px;
-    border: 2px solid #4ea3ff;
-    background: #0f1a33;
-    color: white;
-  }
-
-  .btn {
-    padding: 10px 16px;
-    border-radius: 20px;
-    border: 2px solid #4ea3ff;
-    background: #0f1a33;
-    color: white;
-    cursor: pointer;
-  }
-
-  .weather-body {
-    flex: 1;
-    padding: 30px;
-    overflow-y: auto;
-  }
-
-  .cards-row {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-
-  .card {
-    flex: 1;
-    min-width: 280px;
-    background: rgba(17,27,56,0.9);
-    border: 2px solid #4ea3ff;
-    padding: 20px;
-    border-radius: 14px;
-  }
-
-  .forecast-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill,minmax(160px,1fr));
-    gap: 10px;
-  }
-
-  .forecast-item {
-    background: #111b38;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #2b3c6f;
-    text-align: center;
-  }
-
-  .forecast-item img {
-    width: 50px;
-    height: 50px;
-  }
-
-  /* ANIMATIONS */
-
-  .sun {
-    position: absolute;
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    background: radial-gradient(circle,#fff9a6,#ffd700,#ffae00);
-    top: 15%;
-    left: 15%;
-    animation: pulse 5s infinite;
-  }
-
-  @keyframes pulse {
-    0%,100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-  }
-
-  .cloud {
-    position: absolute;
-    width: 160px;
-    height: 60px;
-    background: white;
-    border-radius: 50%;
-    opacity: 0.8;
-    animation: drift 20s linear infinite;
-  }
-
-  @keyframes drift {
-    0% { transform: translateX(-200px); }
-    100% { transform: translateX(120vw); }
-  }
-
-  .raindrop {
-    position: absolute;
-    width: 2px;
-    height: 16px;
-    background: rgba(120,180,255,0.8);
-    animation: rain 0.7s linear infinite;
-  }
-
-  @keyframes rain {
-    0% { top: -20px; }
-    100% { top: 100%; }
-  }
-
-  .snowflake {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: white;
-    animation: snow 4s linear infinite;
-  }
-
-  @keyframes snow {
-    0% { top: -10px; }
-    100% { top: 100%; }
-  }
-
-  .flash {
-    position: absolute;
-    inset: 0;
-    background: white;
-    opacity: 0;
-    animation: flash 3s infinite;
-  }
-
-  @keyframes flash {
-    0%,95%,100% { opacity: 0; }
-    20%,40% { opacity: 1; }
-  }
-
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="sidebar">
-  <h2>Poligonostic</h2>
-  <a href="/">Home</a>
-  <a href="/weather/">Weather</a>
-  <a href="/radar/">Radar</a>
-</div>
+<!-- ========================= LOADING ========================= -->
+<div id="loadingScreen"></div>
 
-<div class="main">
 
-<button class="unit-toggle" onclick="toggleUnits()">Metric / Imperial</button>
+<!-- ========================= SIDEBAR ========================= -->
+<aside id="sidebar">
+    <div id="logo"></div>
+    <nav id="nav"></nav>
+</aside>
 
-<div class="weather-header">
-  <div class="weather-bg" id="weatherBg"></div>
-  <div class="blur-overlay"></div>
 
-  <div class="header-content">
-    <div class="title">Poligonostic Weather</div>
-    <div class="location-name" id="locationName">Loading...</div>
+<!-- ========================= MAIN ========================= -->
+<main id="app">
 
-    <div class="header-row">
-      <input id="searchInput" class="search-box" placeholder="Search city...">
-      <button class="btn" onclick="searchLocation()">Search</button>
-      <button class="btn" onclick="findMyLocation()">My Location</button>
-      <button class="btn" onclick="addFavorite()">⭐</button>
-    </div>
-  </div>
-</div>
 
-<div class="weather-body">
-  <div class="cards-row">
-    <div class="card" id="currentCard">Loading weather...</div>
-    <div class="card">
-      <div class="forecast-grid" id="forecastGrid"></div>
-    </div>
-  </div>
-</div>
+    <!-- ========================= HEADER ========================= -->
+    <header id="header">
 
-</div>
+        <div id="weatherBackground"></div>
+        <div id="overlay"></div>
 
-<script>
+        <div id="headerTop">
+            <div id="title"></div>
+            <div id="location"></div>
+            <div id="lastUpdated"></div>
+        </div>
 
-let useImperial = false;
+        <div id="searchBar"></div>
+        <div id="headerButtons"></div>
 
-const params = new URLSearchParams(location.search);
-const lat = Number(params.get("lat"));
-const lon = Number(params.get("lon"));
-const name = params.get("name");
+    </header>
 
-document.getElementById("locationName").textContent =
-  decodeURIComponent(name || "Unknown");
 
-async function fetchWeather(lat, lon) {
-  try {
-    const point = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
-    const pointData = await point.json();
+    <!-- ========================= USER BAR ========================= -->
+    <section id="userBar">
+        <div id="favorites"></div>
+        <div id="recentLocations"></div>
+    </section>
 
-    const url = pointData?.properties?.forecastHourly || pointData?.properties?.forecast;
 
-    const res = await fetch(url);
-    const data = await res.json();
+    <!-- ========================= ALERTS ========================= -->
+    <section id="alerts"></section>
 
-    const periods = data?.properties?.periods || [];
-    render(periods);
 
-  } catch (e) {
-    console.log(e);
-    document.getElementById("currentCard").innerHTML =
-      "<h3>Error</h3><p>Weather unavailable</p>";
-  }
-}
+    <!-- ========================= DASHBOARD WRAPPER ========================= -->
+    <section id="dashboard">
 
-function render(periods) {
-  const current = periods[0];
 
-  document.getElementById("currentCard").innerHTML = `
-    <h3>Current</h3>
-    <img src="${current.icon}">
-    <p><b>${current.shortForecast}</b></p>
-    <p>${current.temperature}°${current.temperatureUnit}</p>
-  `;
+        <!-- ===== CURRENT WEATHER ===== -->
+        <section id="currentSection">
+            <article id="currentCard"></article>
+            <article id="summaryCard"></article>
+        </section>
 
-  const grid = document.getElementById("forecastGrid");
-  grid.innerHTML = "";
 
-  for (let i = 0; i < Math.min(7, periods.length); i++) {
-    const p = periods[i];
+        <!-- ===== PRECIPITATION ===== -->
+        <section id="precipSection">
+            <article id="rainCard"></article>
+            <article id="snowCard"></article>
+            <article id="iceCard"></article>
+            <article id="thunderCard"></article>
+        </section>
 
-    const div = document.createElement("div");
-    div.className = "forecast-item";
 
-    div.innerHTML = `
-      <img src="${p.icon}">
-      <b>${p.name}</b><br>
-      ${p.shortForecast}<br>
-      ${p.temperature}°${p.temperatureUnit}
-    `;
+        <!-- ===== WIND ===== -->
+        <section id="windSection">
+            <article id="windCard"></article>
+            <article id="gustCard"></article>
+            <article id="windChillCard"></article>
+        </section>
 
-    grid.appendChild(div);
-  }
 
-  updateAnimation(current);
-}
+        <!-- ===== ATMOSPHERE ===== -->
+        <section id="atmosphereSection">
+            <article id="humidityCard"></article>
+            <article id="dewPointCard"></article>
+            <article id="pressureCard"></article>
+            <article id="visibilityCard"></article>
+            <article id="cloudCoverCard"></article>
+            <article id="heatIndexCard"></article>
+        </section>
 
-function updateAnimation(p) {
-  const bg = document.getElementById("weatherBg");
-  bg.innerHTML = "";
 
-  const t = (p.shortForecast || "").toLowerCase();
+        <!-- ===== FORECASTS ===== -->
+        <section id="forecastSection">
+            <article id="hourlyForecast"></article>
+            <article id="dailyForecast"></article>
+            <article id="extendedForecast"></article>
+            <article id="discussionForecast"></article>
+        </section>
 
-  if (t.includes("sun") || t.includes("clear")) {
-    const s = document.createElement("div");
-    s.className = "sun";
-    bg.appendChild(s);
-  }
 
-  if (t.includes("cloud")) {
-    for (let i = 0; i < 4; i++) {
-      const c = document.createElement("div");
-      c.className = "cloud";
-      c.style.top = Math.random() * 40 + "%";
-      c.style.left = Math.random() * 100 + "%";
-      bg.appendChild(c);
-    }
-  }
+        <!-- ===== MAPS / RADAR ===== -->
+        <section id="mapsSection">
+            <article id="radarCard"></article>
+            <article id="satelliteCard"></article>
+            <article id="lightningMapCard"></article>
+            <article id="windMapCard"></article>
+            <article id="tempMapCard"></article>
+            <article id="precipMapCard"></article>
+        </section>
 
-  if (t.includes("rain")) {
-    for (let i = 0; i < 120; i++) {
-      const r = document.createElement("div");
-      r.className = "raindrop";
-      r.style.left = Math.random() * 100 + "%";
-      bg.appendChild(r);
-    }
-  }
 
-  if (t.includes("snow")) {
-    for (let i = 0; i < 80; i++) {
-      const s = document.createElement("div");
-      s.className = "snowflake";
-      s.style.left = Math.random() * 100 + "%";
-      bg.appendChild(s);
-    }
-  }
+        <!-- ===== GRAPHS ===== -->
+        <section id="graphsSection">
+            <article id="tempGraph"></article>
+            <article id="rainGraph"></article>
+            <article id="windGraph"></article>
+            <article id="pressureGraph"></article>
+            <article id="humidityGraph"></article>
+            <article id="uvGraph"></article>
+        </section>
 
-  if (t.includes("thunder")) {
-    const f = document.createElement("div");
-    f.className = "flash";
-    bg.appendChild(f);
-  }
-}
 
-function toggleUnits() {
-  useImperial = !useImperial;
-  fetchWeather(lat, lon);
-}
+        <!-- ===== ASTRONOMY ===== -->
+        <section id="astronomySection">
+            <article id="sunCard"></article>
+            <article id="moonCard"></article>
+            <article id="twilightCard"></article>
+        </section>
 
-function searchLocation() {
-  const q = document.getElementById("searchInput").value;
-  if (!q) return alert("Type a city");
-  alert("Search not wired yet: " + q);
-}
 
-function findMyLocation() {
-  window.location.href = "/weather/map.html";
-}
+        <!-- ===== ENVIRONMENT ===== -->
+        <section id="environmentSection">
+            <article id="airQualityCard"></article>
+            <article id="pollenCard"></article>
+            <article id="fireWeatherCard"></article>
+            <article id="riverLevelsCard"></article>
+            <article id="droughtCard"></article>
+        </section>
 
-function addFavorite() {
-  alert("Saved locally");
-}
 
-fetchWeather(lat, lon);
+        <!-- ===== SPACE WEATHER ===== -->
+        <section id="spaceSection">
+            <article id="auroraCard"></article>
+            <article id="solarCard"></article>
+            <article id="geomagneticCard"></article>
+        </section>
 
-</script>
+
+        <!-- ===== CLIMATE ===== -->
+        <section id="climateSection">
+            <article id="recordsCard"></article>
+            <article id="normalsCard"></article>
+            <article id="historyCard"></article>
+        </section>
+
+
+        <!-- ===== OBSERVATION ===== -->
+        <section id="observationSection">
+            <article id="stationCard"></article>
+            <article id="metarCard"></article>
+        </section>
+
+
+        <!-- ===== EXTRAS ===== -->
+        <section id="extrasSection">
+            <article id="cameraCard"></article>
+            <article id="stormReportsCard"></article>
+            <article id="developerCard"></article>
+        </section>
+
+
+    </section>
+
+
+    <!-- ========================= FOOTER ========================= -->
+    <footer id="footer"></footer>
+
+</main>
+
+
+<!-- ========================= MODALS ========================= -->
+<div id="searchModal"></div>
+<div id="settingsModal"></div>
+<div id="favoritesModal"></div>
+<div id="aboutModal"></div>
+
+
+<!-- ========================= CANVAS LAYERS ========================= -->
+<canvas id="backgroundCanvas"></canvas>
+<canvas id="radarCanvas"></canvas>
+<canvas id="graphCanvas"></canvas>
+
+
+<!-- ========================= APP SCRIPTS ========================= -->
+<script type="module" src="app.js"></script>
+
+<script type="module" src="scripts/weather-api.js"></script>
+<script type="module" src="scripts/alerts.js"></script>
+<script type="module" src="scripts/radar.js"></script>
+<script type="module" src="scripts/astronomy.js"></script>
+
+<script type="module" src="scripts/current.js"></script>
+<script type="module" src="scripts/forecast.js"></script>
+<script type="module" src="scripts/maps.js"></script>
+<script type="module" src="scripts/graphs.js"></script>
+
+<script type="module" src="scripts/environment.js"></script>
+<script type="module" src="scripts/space.js"></script>
+<script type="module" src="scripts/climate.js"></script>
+
+<script type="module" src="scripts/observation.js"></script>
+<script type="module" src="scripts/extras.js"></script>
+
+<script type="module" src="scripts/search.js"></script>
+<script type="module" src="scripts/favorites.js"></script>
+<script type="module" src="scripts/settings.js"></script>
+
+<script type="module" src="scripts/utils.js"></script>
 
 </body>
 </html>
