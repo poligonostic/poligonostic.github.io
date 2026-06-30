@@ -242,21 +242,11 @@ s
 </div>
 
 <script>
-function goWeather() {
-  window.location.href = "/weather/";
-}
+/* ============================
+   MAP + SEARCH SYSTEM
+   ============================ */
 
-/* TIME + DATE */
-function updateTime() {
-  const now = new Date();
-  document.getElementById("datetime").textContent =
-    now.toLocaleString();
-}
-setInterval(updateTime, 1000);
-updateTime();
-
-/* MAP */
-let map = L.map('map').setView([34.7465, -92.2896], 5);
+let map = L.map('map').setView([34.7465, -92.2896], 6);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
@@ -264,7 +254,20 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 let marker = L.marker([34.7465, -92.2896]).addTo(map);
 
-/* SEARCH */
+function setLocation(lat, lon) {
+  marker.setLatLng([lat, lon]);
+  map.setView([lat, lon], 8);
+  loadWeather(lat, lon);
+}
+
+/* CLICK ON MAP TO SET LOCATION */
+map.on('click', function(e) {
+  const lat = e.latlng.lat;
+  const lon = e.latlng.lng;
+  setLocation(lat, lon);
+});
+
+/* SEARCH BAR AUTOCOMPLETE */
 const searchInput = document.getElementById("searchInput");
 const suggestions = document.getElementById("suggestions");
 
@@ -282,25 +285,254 @@ searchInput.addEventListener("input", async () => {
   suggestions.innerHTML = "";
 
   data.features.slice(0, 5).forEach(f => {
-    const name = f.properties.name || f.properties.city || "Unknown";
+    const props = f.properties;
+
+    const name = props.name || props.city || "Unknown";
+
+    // Clean readable label
+    const city = props.city || name;
+    const state = props.state || "";
+    const country = props.country || "";
+    const type = props.type || "place";
+
+    const labelParts = [city, state, country].filter(Boolean);
+    const label = `${labelParts.join(", ")} — ${type}`;
+
     const lat = f.geometry.coordinates[1];
     const lon = f.geometry.coordinates[0];
 
     const div = document.createElement("div");
     div.className = "suggestion";
-    div.textContent = name;
+    div.textContent = label;
+
     div.onclick = () => {
       suggestions.innerHTML = "";
-      searchInput.value = name;
-      marker.setLatLng([lat, lon]);
-      map.setView([lat, lon], 8);
-      window.location.href = `/weather/?lat=${lat}&lon=${lon}`;
+      searchInput.value = label;
+      setLocation(lat, lon);
     };
 
     suggestions.appendChild(div);
   });
 });
+
+/* ============================
+   WEATHER SYSTEM
+   ============================ */
+
+function goHome() {
+  window.location.href = "/";
+}
+
+function openRadar() {
+  window.location.href = "/radar/index.html";
+}
+
+/* FALLBACK ICON LOADER */
+function loadIcon(primary, fallback) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.src = primary;
+    img.onload = () => resolve(primary);
+    img.onerror = () => resolve(fallback);
+  });
+}
+
+/* SVG PICKER */
+function pickSVG(shortForecast) {
+  shortForecast = (shortForecast || "").toLowerCase();
+
+  if (shortForecast.includes("thunder")) return "thunder.svg";
+  if (shortForecast.includes("snow")) return "snowy-3.svg";
+  if (shortForecast.includes("rain") || shortForecast.includes("shower")) return "rainy-4.svg";
+  if (shortForecast.includes("cloudy") && shortForecast.includes("day")) return "cloudy-day-2.svg";
+  if (shortForecast.includes("cloudy") && shortForecast.includes("night")) return "cloudy-night-2.svg";
+  if (shortForecast.includes("cloud")) return "cloudy.svg";
+  if (shortForecast.includes("sunny") || shortForecast.includes("clear")) return "day.svg";
+  if (shortForecast.includes("night") && shortForecast.includes("clear")) return "night.svg";
+
+  return "weather.svg";
+}
+
+async function getWeatherIcon(shortForecast, noaaIcon) {
+  const svg = pickSVG(shortForecast);
+  return await loadIcon(svg, noaaIcon);
+}
+
+/* MAIN WEATHER LOADER */
+async function loadWeather(lat, lon) {
+  document.getElementById("updatedLabel").textContent =
+    "Last updated: " + new Date().toLocaleString();
+
+  const noaaPointURL = `https://api.weather.gov/points/${lat},${lon}`;
+  const openMeteoURL =
+    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+    `&hourly=temperature_2m,relativehumidity_2m,pressure_msl,visibility,cloudcover,apparent_temperature,windspeed_10m,winddirection_10m` +
+    `&current_weather=true&timezone=auto`;
+
+  try {
+    const [noaaPointRes, omRes] = await Promise.all([
+      fetch(noaaPointURL),
+      fetch(openMeteoURL)
+    ]);
+
+    const noaaPoint = await noaaPointRes.json();
+    const omData = await omRes.json();
+
+    try {
+      const rel = noaaPoint.properties.relativeLocation.properties;
+      const name = `${rel.city}, ${rel.state}`;
+      document.getElementById("locationLabel").textContent = `Location: ${name}`;
+    } catch {
+      document.getElementById("locationLabel").textContent =
+        `Location: lat ${lat.toFixed(3)}, lon ${lon.toFixed(3)}`;
+    }
+
+    const forecastURL = noaaPoint.properties.forecast;
+    const hourlyURL = noaaPoint.properties.forecastHourly;
+
+    const [noaaDailyRes, noaaHourlyRes] = await Promise.all([
+      fetch(forecastURL),
+      fetch(hourlyURL)
+    ]);
+
+    const noaaDaily = await noaaDailyRes.json();
+    const noaaHourly = await noaaHourlyRes.json();
+
+    await renderCurrent(noaaDaily);
+    await renderHourly(noaaHourly);
+    await renderDaily(noaaDaily);
+    renderAtmosphere(noaaHourly, omData);
+
+  } catch (e) {
+    console.error(e);
+    document.getElementById("currentCard").innerHTML =
+      "<h2>Current</h2><p class='error'>Error loading data.</p>";
+  }
+}
+
+/* CURRENT */
+async function renderCurrent(noaaDaily) {
+  const card = document.getElementById("currentCard");
+  const periods = noaaDaily.properties.periods || [];
+  if (!periods.length) {
+    card.innerHTML = "<h2>Current</h2><p class='error'>No data.</p>";
+    return;
+  }
+
+  const p = periods[0];
+  const icon = await getWeatherIcon(p.shortForecast, p.icon);
+
+  card.innerHTML = `
+    <h2>Current</h2>
+    <div class="current-frame"><img src="${icon}"></div>
+    <h1>${p.temperature}°F</h1>
+    <p>${p.shortForecast}</p>
+    <p class="small-label">Wind: ${p.windSpeed} ${p.windDirection}</p>
+  `;
+}
+
+/* HOURLY */
+async function renderHourly(noaaHourly) {
+  const card = document.getElementById("hourlyCard");
+  const periods = noaaHourly.properties.periods || [];
+
+  let html = "<h2>Hourly</h2>";
+
+  for (let i = 0; i < 6 && i < periods.length; i++) {
+    const p = periods[i];
+    const icon = await getWeatherIcon(p.shortForecast, p.icon);
+
+    html += `
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <img src="${icon}" style="width:40px;height:40px;">
+        <div>
+          <b>${p.startTime.slice(11,16)}</b><br>
+          ${p.temperature}°${p.temperatureUnit} - ${p.shortForecast}<br>
+          Wind: ${p.windSpeed} ${p.windDirection}
+        </div>
+      </div>
+    `;
+  }
+
+  card.innerHTML = html;
+}
+
+/* DAILY */
+async function renderDaily(noaaDaily) {
+  const card = document.getElementById("dailyCard");
+  const periods = noaaDaily.properties.periods || [];
+
+  let html = "<h2>Daily</h2>";
+
+  for (let i = 0; i < 6 && i < periods.length; i++) {
+    const p = periods[i];
+    const icon = await getWeatherIcon(p.shortForecast, p.icon);
+
+    html += `
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <img src="${icon}" style="width:40px;height:40px;">
+        <div>
+          <b>${p.name}</b><br>
+          ${p.shortForecast}<br>
+          ${p.temperature}°${p.temperatureUnit}
+        </div>
+      </div>
+    `;
+  }
+
+  card.innerHTML = html;
+}
+
+/* ATMOSPHERE */
+function renderAtmosphere(noaaHourly, omData) {
+  const periods = noaaHourly.properties.periods || [];
+  const first = periods[0];
+
+  document.getElementById("windCard").innerHTML = `
+    <h2>Wind</h2>
+    <p class="value">${first.windSpeed}</p>
+    <p class="small-label">Direction: ${first.windDirection}</p>
+  `;
+
+  const hourly = omData.hourly;
+  const idx = 0;
+
+  const rh = hourly.relativehumidity_2m[idx];
+  document.getElementById("humidityCard").innerHTML = `
+    <h2>Humidity</h2>
+    <p class="value">${rh}%</p>
+  `;
+
+  const p = hourly.pressure_msl[idx];
+  document.getElementById("pressureCard").innerHTML = `
+    <h2>Pressure</h2>
+    <p class="value">${p.toFixed(1)} hPa</p>
+  `;
+
+  const vis = hourly.visibility[idx];
+  document.getElementById("visibilityCard").innerHTML = `
+    <h2>Visibility</h2>
+    <p class="value">${(vis/1609.34).toFixed(1)} miles</p>
+  `;
+
+  const cc = hourly.cloudcover[idx];
+  document.getElementById("cloudCard").innerHTML = `
+    <h2>Cloud Cover</h2>
+    <p class="value">${cc}%</p>
+  `;
+
+  const hiC = hourly.apparent_temperature[idx];
+  const hiF = hiC * 9/5 + 32;
+  document.getElementById("heatIndexCard").innerHTML = `
+    <h2>Heat Index</h2>
+    <p class="value">${hiF.toFixed(1)}°F</p>
+  `;
+}
+
+/* INITIAL LOAD (default coords) */
+setLocation(34.7465, -92.2896);
 </script>
+
 
 </body>
 </html>
