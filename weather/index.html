@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="./bos.css">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Poligonostic</title>
+<title>Poligonostic Weather</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Great Vibes&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -15,195 +17,239 @@
 <style>
   body {
     margin: 0;
+    background: #0b1226;
+    color: #e6ecff;
     font-family: 'Inter', sans-serif;
-    color: #0b1226;
-
-    /* ⭐ DARK BLUE → LIGHT BLUE → WHITE GRADIENT */
-    background: linear-gradient(
-      to bottom,
-      #0b1226 0%,
-      #1a2f55 25%,
-      #4ea3ff 60%,
-      #ffffff 100%
-    );
-    background-attachment: fixed;
   }
 
-  /* ⭐ SIDEBAR UPGRADE */
+  /* SIDEBAR */
   #sidebar {
     width: 240px;
-    height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-
-    background: linear-gradient(
-      to bottom,
-      #0f1a33 0%,
-      #14244a 50%,
-      #0f1a33 100%
-    );
-    border-right: 3px solid #ff7adf;
-    box-shadow: 0 0 20px #ff7adf88;
-
-    padding: 20px;
-    box-sizing: border-box;
-    z-index: 1000;
+    background:#0f1a33;
+    height:100vh;
+    position:fixed;
+    left:0;
+    top:0;
+    border-right:2px solid #4ea3ff;
+    padding:20px;
+    box-sizing:border-box;
   }
 
   #sidebar h2 {
-    font-family: 'Great Vibes', cursive;
-    font-size: 42px;
-    color: #ffffff;
-    text-shadow: 0 0 12px #ff7adf;
-    margin-bottom: 25px;
+    font-family:'Great Vibes',cursive;
+    color:#4ea3ff;
+    font-size:36px;
+    margin:0 0 20px 0;
   }
 
   #sidebar a {
-    display: block;
-    padding: 12px 0;
-    font-size: 17px;
-    color: #cfe3ff;
-    text-decoration: none;
-    transition: 0.2s;
+    display:block;
+    color:#cfe3ff;
+    padding:10px 0;
+    text-decoration:none;
+    font-size:15px;
   }
 
   #sidebar a:hover {
-    color: #ffffff;
-    text-shadow: 0 0 10px #ff7adf;
-    transform: translateX(4px);
+    color:#ffffff;
   }
 
-  /* MAIN */
-  #main {
-    margin-left: 260px;
-    padding: 40px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
+  /* MAIN APP */
+  #app {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    margin-left:260px;
   }
 
-  /* ⭐ BIG LOGO */
-  #logo {
+  h1 {
     font-family: 'Great Vibes', cursive;
-    font-size: 110px;
-    color: #ffffff;
-    text-shadow: 0 0 20px #ff7adf, 0 0 40px #ff7adf;
-    margin-bottom: 10px;
+    font-size: 48px;
+    color: #4ea3ff;
+    margin: 0 0 10px 0;
   }
 
-  /* ⭐ TIME + DATE */
-  #datetime {
+  h2 {
+    margin: 0 0 10px 0;
     font-size: 22px;
-    color: #1a2f55;
-    margin-bottom: 40px;
+    color: #4ea3ff;
   }
 
-  #enterBtn {
-    padding: 14px 28px;
-    font-size: 20px;
-    border-radius: 30px;
-    border: 2px solid #ff7adf;
-    background: #0f1a33;
-    color: #ffffff;
-    cursor: pointer;
-    transition: 0.2s;
-    box-shadow: 0 0 12px #ff7adf88;
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
-  #enterBtn:hover {
-    background: #18254a;
-    box-shadow: 0 0 20px #ff7adf;
-  }
-
-  /* SEARCH */
-  #searchInput {
-    width: 60%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 2px solid #ff7adf;
-    background: #0f1a33;
-    color: #ffffff;
+  .location-label {
     font-size: 18px;
-    margin-top: 40px;
-    box-shadow: 0 0 12px #ff7adf88;
+    color: #9ccaff;
+  }
+
+  .small-label {
+    font-size: 13px;
+    color: #cfe3ff;
+  }
+
+  /* SEARCH BAR */
+  #searchContainer {
+    margin-bottom: 20px;
+  }
+
+  #searchInput {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #4ea3ff;
+    background:#0f1a33;
+    color:#e6ecff;
+    font-size:16px;
   }
 
   #suggestions {
-    width: 60%;
-    margin: 0 auto;
-    background: #0f1a33;
-    border: 2px solid #ff7adf;
-    border-top: none;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
+    background:#0f1a33;
+    border:2px solid #4ea3ff;
+    border-top:none;
+    position:absolute;
+    width:calc(100% - 4px);
+    z-index:9999;
   }
 
   .suggestion {
-    padding: 10px;
-    cursor: pointer;
-    color: #ffffff;
+    padding:10px;
+    cursor:pointer;
+    color:#cfe3ff;
   }
 
   .suggestion:hover {
-    background: #18254a;
+    background:#18254a;
   }
 
   /* MAP */
   #map {
-    width: 60%;
     height: 300px;
-    margin: 40px auto;
+    border-radius:12px;
+    border:2px solid #4ea3ff;
+    margin-bottom:20px;
+  }
+
+  /* CARD LAYOUT */
+  .big-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .big-card {
+    background: #111b38;
+    padding: 20px;
     border-radius: 12px;
-    border: 2px solid #ff7adf;
-    box-shadow: 0 0 20px #ff7adf88;
+    border: 2px solid #4ea3ff;
+    min-height: 220px;
   }
 
-  /* ⭐ DRIFTING CLOUDS */
-  .cloud {
-    position: absolute;
-    top: 80px;
-    width: 200px;
-    opacity: 0.8;
-    animation: drift 40s linear infinite;
+  .grid-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
   }
 
-  .cloud2 {
-    top: 160px;
-    width: 260px;
-    opacity: 0.7;
-    animation: drift2 55s linear infinite;
+  .grid-card {
+    background: #111b38;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #2b3c6f;
+    min-height: 160px;
+    position: relative;
+    overflow: hidden;
   }
 
-  @keyframes drift {
-    from { left: -300px; }
-    to { left: 120%; }
+  /* CURRENT ICON FRAME */
+  .current-frame {
+    width: 90px;
+    height: 90px;
+    border-radius: 12px;
+    border: 2px solid #4ea3ff;
+    padding: 5px;
+    background:#0f1a33;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:10px;
   }
 
-  @keyframes drift2 {
-    from { left: 120%; }
-    to { left: -300px; }
+  .current-frame img {
+    width: 70px;
+    height: 70px;
   }
 
-  /* ⭐ SUN */
-  #sun {
-    position: absolute;
-    top: 40px;
-    right: 80px;
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, #fff7c2 0%, #ffd34d 60%, #ffb300 100%);
-    border-radius: 50%;
-    box-shadow: 0 0 40px #ffd34d;
-    animation: floatSun 12s ease-in-out infinite;
+  /* RADAR & SATELLITE FRAMES */
+  .preview-frame {
+    width: 100%;
+    height: 140px;
+    border-radius: 12px;
+    border: 2px solid #4ea3ff;
+    overflow:hidden;
+    position:relative;
+    background:#000;
   }
 
-  @keyframes floatSun {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-    100% { transform: translateY(0px); }
+  .preview-frame img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+
+  .preview-overlay {
+    position:absolute;
+    inset:0;
+    background: radial-gradient(circle at 30% 30%, rgba(78,163,255,0.25), transparent 60%);
+    animation: pulse 4s infinite linear;
+    pointer-events:none;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity:0.4; }
+    50% { transform: scale(1.2); opacity:0.2; }
+    100% { transform: scale(1); opacity:0.4; }
+  }
+
+  .click-overlay {
+    position:absolute;
+    inset:0;
+    cursor:pointer;
+  }
+
+  .click-overlay:hover {
+    box-shadow: 0 0 0 2px #4ea3ff inset;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid #4ea3ff;
+    background: #0f1a33;
+    color: #e6ecff;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .btn:hover {
+    background: #18254a;
+  }
+
+  .value {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .error {
+    color: #ff8080;
+    font-size: 14px;
   }
 </style>
 </head>
@@ -221,42 +267,73 @@
   <a href="/about/">About</a>
 </aside>
 
-<!-- MAIN -->
-<div id="main">
-s
-  <!-- SUN -->
-  <div id="sun"></div>
+<!-- MAIN APP -->
+<div id="app">
 
-  <!-- LOGO -->
-  <div id="logo">Poligonostic</div>
+  <div class="top-bar">
+    <div>
+      <h1>Poligonostic Weather</h1>
+      <div class="location-label" id="locationLabel">Location: Loading…</div>
+      <div class="small-label" id="updatedLabel">Last updated: Loading…</div>
+    </div>
+    <div>
+      <button class="btn" onclick="goHome()">Back Home</button>
+    </div>
+  </div>
 
-  <!-- TIME + DATE -->
-  <div id="datetime"></div>
+  <!-- SEARCH BAR -->
+  <div id="searchContainer">
+    <input id="searchInput" placeholder="Search for a location…">
+    <div id="suggestions"></div>
+  </div>
 
-  <button id="enterBtn" onclick="goWeather()">Enter Weather</button>
-
-  <input id="searchInput" placeholder="Search for a location…">
-  <div id="suggestions"></div>
-
+  <!-- MAP -->
   <div id="map"></div>
+
+  <!-- WEATHER CARDS -->
+  <div class="big-row">
+    <div class="big-card" id="currentCard"><h2>Current</h2>Loading…</div>
+    <div class="big-card" id="hourlyCard"><h2>Hourly</h2>Loading…</div>
+    <div class="big-card" id="dailyCard"><h2>Daily</h2>Loading…</div>
+  </div>
+
+  <div class="grid-row">
+    <div class="grid-card" id="windCard"><h2>Wind</h2>Loading…</div>
+    <div class="grid-card" id="humidityCard"><h2>Humidity</h2>Loading…</div>
+    <div class="grid-card" id="pressureCard"><h2>Pressure</h2>Loading…</div>
+    <div class="grid-card" id="visibilityCard"><h2>Visibility</h2>Loading…</div>
+
+    <div class="grid-card" id="cloudCard"><h2>Cloud Cover</h2>Loading…</div>
+    <div class="grid-card" id="heatIndexCard"><h2>Heat Index</h2>Loading…</div>
+
+    <div class="grid-card" id="radarCard">
+      <h2>Radar</h2>
+      <div class="preview-frame">
+        <img src="radar-preview.png">
+        <div class="preview-overlay"></div>
+        <div class="click-overlay" onclick="openRadar()"></div>
+      </div>
+      <p class="small-label">Click to open full radar</p>
+    </div>
+
+    <div class="grid-card" id="satelliteCard">
+      <h2>Satellite</h2>
+      <div class="preview-frame">
+        <img src="https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/GEOCOLOR/678x678.jpg">
+        <div class="preview-overlay"></div>
+        <div class="click-overlay" onclick="openRadar()"></div>
+      </div>
+      <p class="small-label">Click to open full satellite viewer</p>
+    </div>
+  </div>
 </div>
 
 <script>
-function goWeather() {
-  window.location.href = "/weather/";
-}
+/* ============================
+   MAP + SEARCH SYSTEM
+   ============================ */
 
-/* TIME + DATE */
-function updateTime() {
-  const now = new Date();
-  document.getElementById("datetime").textContent =
-    now.toLocaleString();
-}
-setInterval(updateTime, 1000);
-updateTime();
-
-/* MAP */
-let map = L.map('map').setView([34.7465, -92.2896], 5);
+let map = L.map('map').setView([34.7465, -92.2896], 6);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
@@ -264,7 +341,20 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 let marker = L.marker([34.7465, -92.2896]).addTo(map);
 
-/* SEARCH */
+function setLocation(lat, lon) {
+  marker.setLatLng([lat, lon]);
+  map.setView([lat, lon], 8);
+  loadWeather(lat, lon);
+}
+
+/* CLICK ON MAP TO SET LOCATION */
+map.on('click', function(e) {
+  const lat = e.latlng.lat;
+  const lon = e.latlng.lng;
+  setLocation(lat, lon);
+});
+
+/* SEARCH BAR AUTOCOMPLETE */
 const searchInput = document.getElementById("searchInput");
 const suggestions = document.getElementById("suggestions");
 
@@ -292,14 +382,229 @@ searchInput.addEventListener("input", async () => {
     div.onclick = () => {
       suggestions.innerHTML = "";
       searchInput.value = name;
-      marker.setLatLng([lat, lon]);
-      map.setView([lat, lon], 8);
-      window.location.href = `/weather/?lat=${lat}&lon=${lon}`;
+      setLocation(lat, lon);
     };
 
     suggestions.appendChild(div);
   });
 });
+
+/* ============================
+   WEATHER SYSTEM
+   ============================ */
+
+function goHome() {
+  window.location.href = "/";
+}
+
+function openRadar() {
+  window.location.href = "/radar/index.html";
+}
+
+/* FALLBACK ICON LOADER */
+function loadIcon(primary, fallback) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.src = primary;
+    img.onload = () => resolve(primary);
+    img.onerror = () => resolve(fallback);
+  });
+}
+
+/* SVG PICKER */
+function pickSVG(shortForecast) {
+  shortForecast = (shortForecast || "").toLowerCase();
+
+  if (shortForecast.includes("thunder")) return "thunder.svg";
+  if (shortForecast.includes("snow")) return "snowy-3.svg";
+  if (shortForecast.includes("rain") || shortForecast.includes("shower")) return "rainy-4.svg";
+  if (shortForecast.includes("cloudy") && shortForecast.includes("day")) return "cloudy-day-2.svg";
+  if (shortForecast.includes("cloudy") && shortForecast.includes("night")) return "cloudy-night-2.svg";
+  if (shortForecast.includes("cloud")) return "cloudy.svg";
+  if (shortForecast.includes("sunny") || shortForecast.includes("clear")) return "day.svg";
+  if (shortForecast.includes("night") && shortForecast.includes("clear")) return "night.svg";
+
+  return "weather.svg";
+}
+
+async function getWeatherIcon(shortForecast, noaaIcon) {
+  const svg = pickSVG(shortForecast);
+  return await loadIcon(svg, noaaIcon);
+}
+
+/* MAIN WEATHER LOADER */
+async function loadWeather(lat, lon) {
+  document.getElementById("updatedLabel").textContent =
+    "Last updated: " + new Date().toLocaleString();
+
+  const noaaPointURL = `https://api.weather.gov/points/${lat},${lon}`;
+  const openMeteoURL =
+    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+    `&hourly=temperature_2m,relativehumidity_2m,pressure_msl,visibility,cloudcover,apparent_temperature,windspeed_10m,winddirection_10m` +
+    `&current_weather=true&timezone=auto`;
+
+  try {
+    const [noaaPointRes, omRes] = await Promise.all([
+      fetch(noaaPointURL),
+      fetch(openMeteoURL)
+    ]);
+
+    const noaaPoint = await noaaPointRes.json();
+    const omData = await omRes.json();
+
+    try {
+      const rel = noaaPoint.properties.relativeLocation.properties;
+      const name = `${rel.city}, ${rel.state}`;
+      document.getElementById("locationLabel").textContent = `Location: ${name}`;
+    } catch {
+      document.getElementById("locationLabel").textContent =
+        `Location: lat ${lat.toFixed(3)}, lon ${lon.toFixed(3)}`;
+    }
+
+    const forecastURL = noaaPoint.properties.forecast;
+    const hourlyURL = noaaPoint.properties.forecastHourly;
+
+    const [noaaDailyRes, noaaHourlyRes] = await Promise.all([
+      fetch(forecastURL),
+      fetch(hourlyURL)
+    ]);
+
+    const noaaDaily = await noaaDailyRes.json();
+    const noaaHourly = await noaaHourlyRes.json();
+
+    await renderCurrent(noaaDaily);
+    await renderHourly(noaaHourly);
+    await renderDaily(noaaDaily);
+    renderAtmosphere(noaaHourly, omData);
+
+  } catch (e) {
+    console.error(e);
+    document.getElementById("currentCard").innerHTML =
+      "<h2>Current</h2><p class='error'>Error loading data.</p>";
+  }
+}
+
+/* CURRENT */
+async function renderCurrent(noaaDaily) {
+  const card = document.getElementById("currentCard");
+  const periods = noaaDaily.properties.periods || [];
+  if (!periods.length) {
+    card.innerHTML = "<h2>Current</h2><p class='error'>No data.</p>";
+    return;
+  }
+
+  const p = periods[0];
+  const icon = await getWeatherIcon(p.shortForecast, p.icon);
+
+  card.innerHTML = `
+    <h2>Current</h2>
+    <div class="current-frame"><img src="${icon}"></div>
+    <h1>${p.temperature}°F</h1>
+    <p>${p.shortForecast}</p>
+    <p class="small-label">Wind: ${p.windSpeed} ${p.windDirection}</p>
+  `;
+}
+
+/* HOURLY */
+async function renderHourly(noaaHourly) {
+  const card = document.getElementById("hourlyCard");
+  const periods = noaaHourly.properties.periods || [];
+
+  let html = "<h2>Hourly</h2>";
+
+  for (let i = 0; i < 6 && i < periods.length; i++) {
+    const p = periods[i];
+    const icon = await getWeatherIcon(p.shortForecast, p.icon);
+
+    html += `
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <img src="${icon}" style="width:40px;height:40px;">
+        <div>
+          <b>${p.startTime.slice(11,16)}</b><br>
+                    ${p.temperature}°${p.temperatureUnit} - ${p.shortForecast}<br>
+          Wind: ${p.windSpeed} ${p.windDirection}
+        </div>
+      </div>
+    `;
+  }
+
+  card.innerHTML = html;
+}
+
+/* DAILY */
+async function renderDaily(noaaDaily) {
+  const card = document.getElementById("dailyCard");
+  const periods = noaaDaily.properties.periods || [];
+
+  let html = "<h2>Daily</h2>";
+
+  for (let i = 0; i < 6 && i < periods.length; i++) {
+    const p = periods[i];
+    const icon = await getWeatherIcon(p.shortForecast, p.icon);
+
+    html += `
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <img src="${icon}" style="width:40px;height:40px;">
+        <div>
+          <b>${p.name}</b><br>
+          ${p.shortForecast}<br>
+          ${p.temperature}°${p.temperatureUnit}
+        </div>
+      </div>
+    `;
+  }
+
+  card.innerHTML = html;
+}
+
+/* ATMOSPHERE */
+function renderAtmosphere(noaaHourly, omData) {
+  const periods = noaaHourly.properties.periods || [];
+  const first = periods[0];
+
+  document.getElementById("windCard").innerHTML = `
+    <h2>Wind</h2>
+    <p class="value">${first.windSpeed}</p>
+    <p class="small-label">Direction: ${first.windDirection}</p>
+  `;
+
+  const hourly = omData.hourly;
+  const idx = 0;
+
+  const rh = hourly.relativehumidity_2m[idx];
+  document.getElementById("humidityCard").innerHTML = `
+    <h2>Humidity</h2>
+    <p class="value">${rh}%</p>
+  `;
+
+  const p = hourly.pressure_msl[idx];
+  document.getElementById("pressureCard").innerHTML = `
+    <h2>Pressure</h2>
+    <p class="value">${p.toFixed(1)} hPa</p>
+  `;
+
+  const vis = hourly.visibility[idx];
+  document.getElementById("visibilityCard").innerHTML = `
+    <h2>Visibility</h2>
+    <p class="value">${(vis/1609.34).toFixed(1)} miles</p>
+  `;
+
+  const cc = hourly.cloudcover[idx];
+  document.getElementById("cloudCard").innerHTML = `
+    <h2>Cloud Cover</h2>
+    <p class="value">${cc}%</p>
+  `;
+
+  const hiC = hourly.apparent_temperature[idx];
+  const hiF = hiC * 9/5 + 32;
+  document.getElementById("heatIndexCard").innerHTML = `
+    <h2>Heat Index</h2>
+    <p class="value">${hiF.toFixed(1)}°F</p>
+  `;
+}
+
+/* INITIAL LOAD (default coords) */
+setLocation(34.7465, -92.2896);
 </script>
 
 </body>
