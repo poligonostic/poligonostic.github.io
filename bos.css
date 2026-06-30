@@ -1,0 +1,205 @@
+/* ============================
+   GLOBAL BACKGROUND
+   ============================ */
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  color: #0b1226;
+
+  background: linear-gradient(
+    to bottom,
+    #0b1226 0%,
+    #1a2f55 25%,
+    #4ea3ff 60%,
+    #ffffff 100%
+  );
+  background-attachment: fixed;
+}
+
+
+/* ============================
+   SIDEBAR (GLOBAL)
+   ============================ */
+
+#sidebar {
+  width: 240px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+
+  background: linear-gradient(
+    to bottom,
+    #0f1a33 0%,
+    #14244a 50%,
+    #0f1a33 100%
+  );
+
+  border-right: 3px solid #ff7adf;
+  box-shadow: 0 0 20px #ff7adf88;
+
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+#sidebar h2 {
+  font-family: 'Great Vibes', cursive;
+  font-size: 42px;
+  color: #ffffff;
+  text-shadow: 0 0 12px #ff7adf;
+  margin-bottom: 25px;
+}
+
+#sidebar a {
+  display: block;
+  padding: 12px 0;
+  font-size: 17px;
+  color: #cfe3ff;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+#sidebar a:hover {
+  color: #ffffff;
+  text-shadow: 0 0 10px #ff7adf;
+  transform: translateX(4px);
+}
+
+
+/* ============================
+   MAIN CONTENT WRAPPER
+   ============================ */
+
+#main {
+  margin-left: 260px;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+
+/* ============================
+   LOGO (GLOBAL)
+   ============================ */
+
+#logo {
+  font-family: 'Great Vibes', cursive;
+  font-size: 110px;
+  color: #ffffff;
+  text-shadow: 0 0 20px #ff7adf, 0 0 40px #ff7adf;
+  margin-bottom: 10px;
+}
+
+
+/* ============================
+   TIME + DATE
+   ============================ */
+
+#datetime {
+  font-size: 22px;
+  color: #1a2f55;
+  margin-bottom: 40px;
+}
+
+
+/* ============================
+   BUTTONS
+   ============================ */
+
+.btn,
+#enterBtn {
+  padding: 14px 28px;
+  font-size: 20px;
+  border-radius: 30px;
+  border: 2px solid #ff7adf;
+  background: #0f1a33;
+  color: #ffffff;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 0 12px #ff7adf88;
+}
+
+.btn:hover,
+#enterBtn:hover {
+  background: #18254a;
+  box-shadow: 0 0 20px #ff7adf;
+}
+
+
+/* ============================
+   SEARCH BAR
+   ============================ */
+
+#searchInput {
+  width: 60%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 2px solid #ff7adf;
+  background: #0f1a33;
+  color: #ffffff;
+  font-size: 18px;
+  margin-top: 40px;
+  box-shadow: 0 0 12px #ff7adf88;
+}
+
+#suggestions {
+  width: 60%;
+  margin: 0 auto;
+  background: #0f1a33;
+  border: 2px solid #ff7adf;
+  border-top: none;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+}
+
+.suggestion {
+  padding: 10px;
+  cursor: pointer;
+  color: #ffffff;
+}
+
+.suggestion:hover {
+  background: #18254a;
+}
+
+
+/* ============================
+   MAP
+   ============================ */
+
+#map {
+  width: 60%;
+  height: 300px;
+  margin: 40px auto;
+  border-radius: 12px;
+  border: 2px solid #ff7adf;
+  box-shadow: 0 0 20px #ff7adf88;
+}
+
+
+/* ============================
+   SUN (GLOBAL)
+   ============================ */
+
+#sun {
+  position: absolute;
+  top: 40px;
+  right: 80px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, #fff7c2 0%, #ffd34d 60%, #ffb300 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 40px #ffd34d;
+  animation: floatSun 12s ease-in-out infinite;
+}
+
+@keyframes floatSun {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
