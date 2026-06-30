@@ -1,0 +1,268 @@
+/* =========================================================
+   POLIGONISTIC WEATHER v2
+   STYLE FOUNDATION
+========================================================= */
+
+
+/* ========================= BASE ========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Inter", sans-serif;
+    background: #0b1226;
+    color: #e6ecff;
+    overflow-x: hidden;
+}
+
+
+/* ========================= LAYOUT ========================= */
+
+#app {
+    display: flex;
+    min-height: 100vh;
+}
+
+
+/* ========================= SIDEBAR ========================= */
+
+#sidebar {
+    width: 260px;
+    background: #0f1a33;
+    border-right: 2px solid #4ea3ff;
+    padding: 20px;
+}
+
+#logo {
+    height: 60px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #1f2b4d;
+}
+
+#nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+/* ========================= HEADER ========================= */
+
+#header {
+    position: relative;
+    padding: 30px;
+    background: #111b38;
+    overflow: hidden;
+}
+
+#weatherBackground {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+#overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(11,18,38,0.4);
+    backdrop-filter: blur(6px);
+    z-index: 1;
+}
+
+#headerTop,
+#searchBar,
+#headerButtons {
+    position: relative;
+    z-index: 2;
+}
+
+#title {
+    font-family: "Great Vibes", cursive;
+    font-size: 48px;
+    color: #4ea3ff;
+}
+
+#location {
+    font-size: 22px;
+    color: #9ccaff;
+    margin-top: 5px;
+}
+
+
+/* ========================= USER BAR ========================= */
+
+#userBar {
+    display: flex;
+    gap: 10px;
+    padding: 10px 20px;
+    background: #0f1a33;
+    border-bottom: 1px solid #1f2b4d;
+}
+
+
+/* ========================= ALERTS ========================= */
+
+#alerts {
+    padding: 15px 20px;
+    background: #1a2447;
+    border-left: 4px solid #ffcc00;
+    display: none;
+}
+
+
+/* ========================= DASHBOARD GRID ========================= */
+
+#dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+
+/* ========================= CARD SYSTEM ========================= */
+
+article {
+    background: rgba(17, 27, 56, 0.85);
+    border: 1px solid #2b3c6f;
+    border-radius: 14px;
+    padding: 15px;
+    min-height: 120px;
+    transition: 0.2s ease;
+    overflow: hidden;
+}
+
+article:hover {
+    transform: translateY(-3px);
+    border-color: #4ea3ff;
+}
+
+
+/* Card Headers (JS will inject text later) */
+article::before {
+    content: attr(id);
+    display: block;
+    font-size: 12px;
+    opacity: 0.4;
+    margin-bottom: 8px;
+}
+
+
+/* ========================= SECTIONS ========================= */
+
+section {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+
+/* ========================= LOADING SCREEN ========================= */
+
+#loadingScreen {
+    position: fixed;
+    inset: 0;
+    background: #0b1226;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* ========================= CANVAS LAYERS ========================= */
+
+canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
+
+#backgroundCanvas {
+    z-index: 0;
+}
+
+#radarCanvas {
+    z-index: 1;
+    opacity: 0.7;
+}
+
+#graphCanvas {
+    z-index: 2;
+    opacity: 0.9;
+}
+
+
+/* ========================= SCROLLBAR ========================= */
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f1a33;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #2b3c6f;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #4ea3ff;
+}
+
+
+/* ========================= BUTTON STYLE (GLOBAL) ========================= */
+
+button {
+    background: #0f1a33;
+    border: 1px solid #4ea3ff;
+    color: #e6ecff;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #14244a;
+}
+
+
+/* ========================= INPUT ========================= */
+
+input {
+    background: #0f1a33;
+    border: 1px solid #2b3c6f;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #4ea3ff;
+}
+
+
+/* ========================= MOBILE ========================= */
+
+@media (max-width: 900px) {
+
+    #app {
+        flex-direction: column;
+    }
+
+    #sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 2px solid #4ea3ff;
+    }
+
+}
