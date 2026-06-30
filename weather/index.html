@@ -6,7 +6,11 @@
 
 <title>Poligonostic Weather</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Great Vibes&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
   body {
@@ -86,6 +90,48 @@
   .small-label {
     font-size: 13px;
     color: #cfe3ff;
+  }
+
+  /* SEARCH BAR */
+  #searchContainer {
+    margin-bottom: 20px;
+  }
+
+  #searchInput {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #4ea3ff;
+    background:#0f1a33;
+    color:#e6ecff;
+    font-size:16px;
+  }
+
+  #suggestions {
+    background:#0f1a33;
+    border:2px solid #4ea3ff;
+    border-top:none;
+    position:absolute;
+    width:calc(100% - 4px);
+    z-index:9999;
+  }
+
+  .suggestion {
+    padding:10px;
+    cursor:pointer;
+    color:#cfe3ff;
+  }
+
+  .suggestion:hover {
+    background:#18254a;
+  }
+
+  /* MAP */
+  #map {
+    height: 300px;
+    border-radius:12px;
+    border:2px solid #4ea3ff;
+    margin-bottom:20px;
   }
 
   /* CARD LAYOUT */
@@ -203,29 +249,12 @@
     color: #ff8080;
     font-size: 14px;
   }
-
-  @media (max-width: 1000px) {
-    .big-row {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    .grid-row {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  @media (max-width: 700px) {
-    .big-row {
-      grid-template-columns: 1fr;
-    }
-    .grid-row {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
 <aside id="sidebar">
   <h2>Poligonostic</h2>
   <a href="/">Home</a>
@@ -236,7 +265,9 @@
   <a href="/about/">About</a>
 </aside>
 
+<!-- MAIN APP -->
 <div id="app">
+
   <div class="top-bar">
     <div>
       <h1>Poligonostic Weather</h1>
@@ -248,19 +279,20 @@
     </div>
   </div>
 
+  <!-- SEARCH BAR -->
+  <div id="searchContainer">
+    <input id="searchInput" placeholder="Search for a location…">
+    <div id="suggestions"></div>
+  </div>
+
+  <!-- MAP -->
+  <div id="map"></div>
+
+  <!-- WEATHER CARDS -->
   <div class="big-row">
-    <div class="big-card" id="currentCard">
-      <h2>Current</h2>
-      Loading…
-    </div>
-    <div class="big-card" id="hourlyCard">
-      <h2>Hourly</h2>
-      Loading…
-    </div>
-    <div class="big-card" id="dailyCard">
-      <h2>Daily</h2>
-      Loading…
-    </div>
+    <div class="big-card" id="currentCard"><h2>Current</h2>Loading…</div>
+    <div class="big-card" id="hourlyCard"><h2>Hourly</h2>Loading…</div>
+    <div class="big-card" id="dailyCard"><h2>Daily</h2>Loading…</div>
   </div>
 
   <div class="grid-row">
@@ -275,7 +307,7 @@
     <div class="grid-card" id="radarCard">
       <h2>Radar</h2>
       <div class="preview-frame">
-        <img src="radar-preview.png" alt="Radar Preview">
+        <img src="radar-preview.png">
         <div class="preview-overlay"></div>
         <div class="click-overlay" onclick="openRadar()"></div>
       </div>
@@ -285,7 +317,7 @@
     <div class="grid-card" id="satelliteCard">
       <h2>Satellite</h2>
       <div class="preview-frame">
-        <img src="https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/GEOCOLOR/678x678.jpg" alt="Satellite Preview">
+        <img src="https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/GEOCOLOR/678x678.jpg">
         <div class="preview-overlay"></div>
         <div class="click-overlay" onclick="openRadar()"></div>
       </div>
@@ -293,18 +325,86 @@
     </div>
   </div>
 </div>
+  <hr>
+    <hr>
+      <hr>
+        <hr>
+          <hr>
+            <hr>
+              <hr>
+                <hr>
+                  <hr>
+                    <hr>
+                      <hr>
+                        <hr>
+                          <hr>
+                            <hr>
+                              <hr>
 
 <script>
-function getCoords() {
-  const params = new URLSearchParams(location.search);
-  let lat = params.get("lat");
-  let lon = params.get("lon");
-  if (!lat || !lon) {
-    lat = 34.7465;
-    lon = -92.2896;
-  }
-  return { lat: Number(lat), lon: Number(lon) };
+/* ============================
+   MAP + SEARCH SYSTEM
+   ============================ */
+
+let map = L.map('map').setView([34.7465, -92.2896], 6);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19
+}).addTo(map);
+
+let marker = L.marker([34.7465, -92.2896]).addTo(map);
+
+function setLocation(lat, lon) {
+  marker.setLatLng([lat, lon]);
+  map.setView([lat, lon], 8);
+  loadWeather(lat, lon);
 }
+
+/* CLICK ON MAP TO SET LOCATION */
+map.on('click', function(e) {
+  const lat = e.latlng.lat;
+  const lon = e.latlng.lng;
+  setLocation(lat, lon);
+});
+
+/* SEARCH BAR AUTOCOMPLETE */
+const searchInput = document.getElementById("searchInput");
+const suggestions = document.getElementById("suggestions");
+
+searchInput.addEventListener("input", async () => {
+  const q = searchInput.value.trim();
+  if (!q) {
+    suggestions.innerHTML = "";
+    return;
+  }
+
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  suggestions.innerHTML = "";
+
+  data.features.slice(0, 5).forEach(f => {
+    const name = f.properties.name || f.properties.city || "Unknown";
+    const lat = f.geometry.coordinates[1];
+    const lon = f.geometry.coordinates[0];
+
+    const div = document.createElement("div");
+    div.className = "suggestion";
+    div.textContent = name;
+    div.onclick = () => {
+      suggestions.innerHTML = "";
+      searchInput.value = name;
+      setLocation(lat, lon);
+    };
+
+    suggestions.appendChild(div);
+  });
+});
+
+/* ============================
+   WEATHER SYSTEM
+   ============================ */
 
 function goHome() {
   window.location.href = "/";
@@ -314,6 +414,7 @@ function openRadar() {
   window.location.href = "/radar/index.html";
 }
 
+/* FALLBACK ICON LOADER */
 function loadIcon(primary, fallback) {
   return new Promise(resolve => {
     const img = new Image();
@@ -323,7 +424,8 @@ function loadIcon(primary, fallback) {
   });
 }
 
-function pickSVG(shortForecast, weathercode) {
+/* SVG PICKER */
+function pickSVG(shortForecast) {
   shortForecast = (shortForecast || "").toLowerCase();
 
   if (shortForecast.includes("thunder")) return "thunder.svg";
@@ -338,14 +440,13 @@ function pickSVG(shortForecast, weathercode) {
   return "weather.svg";
 }
 
-async function getWeatherIcon(shortForecast, weathercode, noaaIcon) {
-  const svg = pickSVG(shortForecast, weathercode);
+async function getWeatherIcon(shortForecast, noaaIcon) {
+  const svg = pickSVG(shortForecast);
   return await loadIcon(svg, noaaIcon);
 }
 
-async function loadAll() {
-  const { lat, lon } = getCoords();
-
+/* MAIN WEATHER LOADER */
+async function loadWeather(lat, lon) {
   document.getElementById("updatedLabel").textContent =
     "Last updated: " + new Date().toLocaleString();
 
@@ -368,7 +469,7 @@ async function loadAll() {
       const rel = noaaPoint.properties.relativeLocation.properties;
       const name = `${rel.city}, ${rel.state}`;
       document.getElementById("locationLabel").textContent = `Location: ${name}`;
-    } catch (e) {
+    } catch {
       document.getElementById("locationLabel").textContent =
         `Location: lat ${lat.toFixed(3)}, lon ${lon.toFixed(3)}`;
     }
@@ -388,6 +489,7 @@ async function loadAll() {
     await renderHourly(noaaHourly);
     await renderDaily(noaaDaily);
     renderAtmosphere(noaaHourly, omData);
+
   } catch (e) {
     console.error(e);
     document.getElementById("currentCard").innerHTML =
@@ -395,6 +497,7 @@ async function loadAll() {
   }
 }
 
+/* CURRENT */
 async function renderCurrent(noaaDaily) {
   const card = document.getElementById("currentCard");
   const periods = noaaDaily.properties.periods || [];
@@ -404,41 +507,34 @@ async function renderCurrent(noaaDaily) {
   }
 
   const p = periods[0];
-  const tempF = p.temperature;
-  const short = p.shortForecast;
-
-  const icon = await getWeatherIcon(short, null, p.icon);
+  const icon = await getWeatherIcon(p.shortForecast, p.icon);
 
   card.innerHTML = `
     <h2>Current</h2>
-    <div class="current-frame">
-      <img src="${icon}">
-    </div>
-    <h1>${tempF}°F</h1>
-    <p>${short}</p>
+    <div class="current-frame"><img src="${icon}"></div>
+    <h1>${p.temperature}°F</h1>
+    <p>${p.shortForecast}</p>
     <p class="small-label">Wind: ${p.windSpeed} ${p.windDirection}</p>
   `;
 }
 
+/* HOURLY */
 async function renderHourly(noaaHourly) {
   const card = document.getElementById("hourlyCard");
   const periods = noaaHourly.properties.periods || [];
-  if (!periods.length) {
-    card.innerHTML = "<h2>Hourly</h2><p class='error'>No data.</p>";
-    return;
-  }
 
   let html = "<h2>Hourly</h2>";
+
   for (let i = 0; i < 6 && i < periods.length; i++) {
     const p = periods[i];
-    const icon = await getWeatherIcon(p.shortForecast, null, p.icon);
+    const icon = await getWeatherIcon(p.shortForecast, p.icon);
 
     html += `
       <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
         <img src="${icon}" style="width:40px;height:40px;">
         <div>
           <b>${p.startTime.slice(11,16)}</b><br>
-          ${p.temperature}°${p.temperatureUnit} - ${p.shortForecast}<br>
+                    ${p.temperature}°${p.temperatureUnit} - ${p.shortForecast}<br>
           Wind: ${p.windSpeed} ${p.windDirection}
         </div>
       </div>
@@ -448,18 +544,16 @@ async function renderHourly(noaaHourly) {
   card.innerHTML = html;
 }
 
+/* DAILY */
 async function renderDaily(noaaDaily) {
   const card = document.getElementById("dailyCard");
   const periods = noaaDaily.properties.periods || [];
-  if (!periods.length) {
-    card.innerHTML = "<h2>Daily</h2><p class='error'>No data.</p>";
-    return;
-  }
 
   let html = "<h2>Daily</h2>";
+
   for (let i = 0; i < 6 && i < periods.length; i++) {
     const p = periods[i];
-    const icon = await getWeatherIcon(p.shortForecast, null, p.icon);
+    const icon = await getWeatherIcon(p.shortForecast, p.icon);
 
     html += `
       <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
@@ -476,6 +570,7 @@ async function renderDaily(noaaDaily) {
   card.innerHTML = html;
 }
 
+/* ATMOSPHERE */
 function renderAtmosphere(noaaHourly, omData) {
   const periods = noaaHourly.properties.periods || [];
   const first = periods[0];
@@ -521,8 +616,8 @@ function renderAtmosphere(noaaHourly, omData) {
   `;
 }
 
-loadAll();
+/* INITIAL LOAD (default coords) */
+setLocation(34.7465, -92.2896);
 </script>
-
 </body>
 </html>
